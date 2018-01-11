@@ -110,7 +110,6 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
     public function PointCheckoutApiCall($paymentRequestParams){
         $info = json_encode($paymentRequestParams);
         try {
-            file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento/var/log/yaser.log", date("Y-m-d h:i:sa") .'request is '.$info.' -----\\r\\n',FILE_APPEND);
             // create a new cURL resource
             $headers = array(
                 'Content-Type: application/json',
@@ -127,7 +126,6 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             curl_setopt($ch, CURLOPT_POSTFIELDS ,json_encode($paymentRequestParams));
             // grab URL and pass it to the browser
             $response = curl_exec($ch);
-            file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento/var/log/yaser.log", date("Y-m-d h:i:sa") .'response  is '.$response.'from '.$_BASE_URL.' -----\\r\\n',FILE_APPEND);
             
         }catch(Exception $e){
             $this->log('Failed while sending first request to pointchckout resone: '.$e->getMessage());
@@ -139,7 +137,6 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
     
     public function PointCheckoutSecoundCall(){
         try {
-            file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento/var/log/yaser.log", date("Y-m-d h:i:sa") .'checkout Id is '.$checkoutId.' -----\\r\\n',FILE_APPEND);
             
             // create a new cURL resource
             $headers = array(
@@ -156,7 +153,6 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             curl_setopt($ch, CURLOPT_HTTPHEADER,$headers);
             // grab URL and pass it to the browser
             $response = curl_exec($ch);
-            file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento/var/log/yaser.log", date("Y-m-d h:i:sa") .'response  is '.$response.'from '.$_BASE_URL.' -----\\r\\n',FILE_APPEND);
             
         }catch(Exception $e){
             $this->log('Failed while sending secound request to pointchckout resone: '.$e->getMessage());
