@@ -1,5 +1,5 @@
-# wordpress4-pointcheckout
-word-press4-pointcheckout word press 4 with woo-commerce 3 extension for PointCheckout
+=== PointCheckout woocommerce plugin ===
+TTested for woocommerce 3.2.6
 
 copy the extracted folder and all its content to your plugins directory and then you may go to 
 
