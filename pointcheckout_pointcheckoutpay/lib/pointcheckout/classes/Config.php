@@ -20,6 +20,8 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
     private $orderPlacement;
     private $status;
     private $logFileDir;
+    private $allowSpecific;
+    private $specific_countries;
     
 
 
@@ -40,6 +42,8 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         $this->successOrderStatusId = '';
         $this->orderPlacement                        = $this->_getShoppingCartConfig('order_placement');
         $this->status                                = $this->enabled;
+        $this->allowSpecific                         = $this->_getShoppingCartConfig('allow_specific');
+        $this->specific_countries                    = $this->_getShoppingCartConfig('specific_countries');
         
     }
 
@@ -101,6 +105,14 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         }
         return false;
     }
+    
+    public function isSpecificCountries(){
+        return $this->allowSpecific == 1?true:false;
+    }
+    
+    public function getSpecificCountries(){
+        return $this->specific_countries;
+    }
 
     public function getOrderPlacement()
     {
@@ -123,7 +135,9 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         return false;
     }
 
-
+    public function isEnabled(){
+        return $this->enabled == 1?true:false;
+    }
 
     public function getApiKey(){
         return $this->Api_Key;
@@ -133,7 +147,7 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         return $this->Api_Secret;
     }
     
-    public function isTestMode(){
+    public function isLiveMode(){
         return $this->Mode == 1?true:false;
     }
     

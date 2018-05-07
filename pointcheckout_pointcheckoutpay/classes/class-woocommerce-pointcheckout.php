@@ -40,10 +40,39 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
         
         $pointcheckoutSettings = array();
         
-        $pointcheckoutSettings['enabled']  = isset($settings['enabled']) ? $settings['enabled'] : "no";
+        $pointcheckoutSettings['enabled']  = isset($settings['enabled']) ? $settings['enabled'] : 0;
         
         update_option( 'woocommerce_pointcheckout_settings', apply_filters( 'woocommerce_settings_api_sanitized_fields_pointcheckout', $pointcheckoutSettings ) );
         return $result;
+    }
+    
+    
+    public function is_available() {
+        if (! $this->pfConfig->isEnabled())
+            return false;
+        file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento2/var/log/yaser.log", date("Y-m-d h:i:sa") . '@@@@@ checking the role   : ' . WC()->customer->get_role() . "\r\n", FILE_APPEND);
+        $customerRole = WC()->customer->get_role();
+        if (! $customerRole == 'customer' && ! $customerRole == 'administrator')
+            return false;
+        file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento2/var/log/yaser.log", date("Y-m-d h:i:sa") . '@@@@@ checking   : ' . "\r\n", FILE_APPEND);
+        
+        if ($this->pfConfig->isSpecificCountries()) {
+            
+            $billingCountry = WC()->customer->get_billing_country();
+            file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento2/var/log/yaser.log", date("Y-m-d h:i:sa") . '@@@@@ country is  : ' . $billingCountry . "\r\n", FILE_APPEND);
+            
+            if ($billingCountry == null)
+                return false;
+            file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento2/var/log/yaser.log", date("Y-m-d h:i:sa") . '@@@@@ country is  : ' . $billingCountry . "\r\n", FILE_APPEND);
+            foreach ($this->pfConfig->getSpecificCountries() as $country) {
+                if ($country == $billingCountry) {
+                    file_put_contents("/Applications/XAMPP/xamppfiles/htdocs/magento2/var/log/yaser.log", date("Y-m-d h:i:sa") . '@@@@@ country is  : ' . $country . $billingCountry . "\r\n", FILE_APPEND);
+                    return parent::is_available();
+                }
+            }
+            return false;
+        }
+        return parent::is_available();
     }
     
     function payment_scripts()
@@ -84,6 +113,12 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
                                 alert('Please enter your Api Secret!');
                                 return false;
                             }
+                            if(jQuery('#woocommerce_pointcheckout_pay_allow_specific').val() == 1){
+                                if(!jQuery('#woocommerce_pointcheckout_pay_specific_countries').val()){
+                                	alert('You select to specifiy for applicable countries but you did not select any!');
+                                 return false;
+                                }
+                            }
                         })
                     });
                 </script>
@@ -103,9 +138,13 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
         $this->form_fields = array(
             'enabled'             => array(
                 'title'   => __('Enable/Disable', 'pointcheckout_pointcheckoutpay'),
-                'type'    => 'checkbox',
+                'type'    => 'select',
                 'label'   => __('Enable the PointCheckout gateway', 'pointcheckout_pointcheckoutpay'),
-                'default' => 'yes'
+                'default' => '0',
+                'options' =>array(
+                    '1' => __('Enabled', 'pointcheckout_pointcheckoutpay'),
+                    '0' => __('Disabled', 'pointcheckout_pointcheckoutpay'),
+                )
             ),
             'description'         => array(
                 'title'       => __('Description', 'pointcheckout_pointcheckoutpay'),
@@ -183,8 +222,32 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
                 'placeholder' => '',
                 'class'       => 'wc-enhanced-select',
             ),
+            'allow_specific'=>array(
+                'title'       => __('Applicable Countries', 'pointcheckout_pointcheckoutpay'),
+                'type'        => 'select',
+                'options'     => array(
+                    '0' => __('All Countries', 'pointcheckout_pointcheckoutpay'),
+                    '1' => __('Specific countries only', 'pointcheckout_pointcheckoutpay'))
+            ),
+            'specific_countries'=>array(
+                'title'   => __( 'Specific Countries','pointcheckout_pointcheckoutpay' ),
+                'desc'    => '',
+                'css'     => 'min-width: 350px;min-height:300px;',
+                'default' => 'wc_get_base_location()',
+                'type'    => 'multiselect',
+                'options' => $this->getCountries()
+            )
         );
     }
+    
+    
+    function getCountries(){
+        $countries_obj   = new WC_Countries();
+        $countries   = $countries_obj->__get('countries');
+        
+        return $countries;
+    }
+    
 
     /**
      * Process the payment and return the result

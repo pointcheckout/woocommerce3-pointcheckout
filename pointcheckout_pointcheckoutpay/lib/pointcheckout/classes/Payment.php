@@ -162,8 +162,8 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
     }
     
     public function getGatewayApiUrl(){
-        $testMode = $this->pfConfig->isTestMode();
-        if ($testMode) {
+        $liveMode = $this->pfConfig->isLiveMode();
+        if ($liveMode) {
            return $gatewayUrl = 'https://pay.pointcheckout.com/api/v1.0/checkout/';
         }elseif($this->pfConfig->isStagingMode()){
             return $gatewayUrl = 'https://pay.staging.pointcheckout.com/api/v1.0/checkout/';
@@ -174,8 +174,8 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
 
     
     public function getGatewayUrl(){
-        $testMode = $this->pfConfig->isTestMode();
-        if ($testMode) {
+        $liveMode = $this->pfConfig->isLiveMode();
+        if ($liveMode) {
             return $gatewayUrl = 'https://pay.pointcheckout.com/checkout/';
         }elseif($this->pfConfig->isStagingMode()){
             return $gatewayUrl = 'https://pay.staging.pointcheckout.com/checkout/';
