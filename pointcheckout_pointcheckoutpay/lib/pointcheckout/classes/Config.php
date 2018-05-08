@@ -22,7 +22,8 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
     private $logFileDir;
     private $allowSpecific;
     private $specific_countries;
-    
+    private $allowUserSpecific;
+    private $specific_uesr_roles;
 
 
     public function __construct()
@@ -44,7 +45,8 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         $this->status                                = $this->enabled;
         $this->allowSpecific                         = $this->_getShoppingCartConfig('allow_specific');
         $this->specific_countries                    = $this->_getShoppingCartConfig('specific_countries');
-        
+        $this->allowUserSpecific                     = $this->_getShoppingCartConfig('allow_user_specific');
+        $this->specific_uesr_roles                    = $this->_getShoppingCartConfig('specific_user_roles');
     }
 
     /**
@@ -112,6 +114,14 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
     
     public function getSpecificCountries(){
         return $this->specific_countries;
+    }
+    
+    public function isSpecificUserRoles(){
+        return $this->allowUserSpecific == 1?true:false;
+    }
+    
+    public function getSpecificUserRoles(){
+        return $this->specific_uesr_roles;
     }
 
     public function getOrderPlacement()
