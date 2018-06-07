@@ -10,7 +10,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
     {
         global $woocommerce;
         $this->has_fields = false;
-        $this->icon       = apply_filters('woocommerce_POINTCHECKOUT_icon', POINTCHECKOUT_PAY_URL . 'assets/images/pointcheckout.png');
+        $this->icon       = apply_filters('woocommerce_POINTCHECKOUT_icon', 'https://pointcheckout.com/image/logo.png');
         if(is_admin()) {
             $this->has_fields = true;
             $this->init_form_fields();
@@ -335,7 +335,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
         global $woocommerce;
             //send the secound call to pointcheckout to confirm payment 
             $success = $this->pfPayment->handlePointCheckoutResponse();
-            $order = wc_get_order(WC()->session->get('order_awaiting_payment'));
+            $order = wc_get_order($_REQUEST['reference']);
             if ($success['success']) {
                 $order->payment_complete();
                 $order->add_order_note('PointCheckout payment confirmed');
