@@ -10,7 +10,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
     {
         global $woocommerce;
         $this->has_fields = false;
-        $this->icon       = apply_filters('woocommerce_POINTCHECKOUT_icon', POINTCHECKOUT_PAY_URL . 'assets/images/pointcheckout.png');
+        $this->icon       = apply_filters('woocommerce_POINTCHECKOUT_icon', 'https://pointcheckout.com/image/logo.png');
         if(is_admin()) {
             $this->has_fields = true;
             $this->init_form_fields();
@@ -40,10 +40,49 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
         
         $pointcheckoutSettings = array();
         
-        $pointcheckoutSettings['enabled']  = isset($settings['enabled']) ? $settings['enabled'] : "no";
+        $pointcheckoutSettings['enabled']  = isset($settings['enabled']) ? $settings['enabled'] : 0;
         
         update_option( 'woocommerce_pointcheckout_settings', apply_filters( 'woocommerce_settings_api_sanitized_fields_pointcheckout', $pointcheckoutSettings ) );
         return $result;
+    }
+    
+    
+    public function is_available()
+    {
+        if (! $this->pfConfig->isEnabled())
+            return false;
+        $valid = true;
+        if ($this->pfConfig->isSpecificUserRoles()) {
+            $valid = false;
+            $user_id = WC()->customer->get_id();
+            $user = new WP_User($user_id);
+            if (! empty($user->roles) && is_array($user->roles)) {
+                foreach ($user->roles as $user_role)
+                foreach ($this->pfConfig->getSpecificUserRoles() as $role) {
+                    if ($role == $user_role) {
+                        $valid = true;
+                    }
+                }
+            }
+        }
+        
+        if ($valid && $this->pfConfig->isSpecificCountries()) {
+            $valid = false;
+            $billingCountry = WC()->customer->get_billing_country();
+            
+            if (! $billingCountry == null) {
+                foreach ($this->pfConfig->getSpecificCountries() as $country) {
+                    if ($country == $billingCountry) {
+                        $valid = true;
+                    }
+                }
+            }
+        }
+        if ($valid) {
+            return parent::is_available();
+        } else {
+            return false;
+        }
     }
     
     function payment_scripts()
@@ -84,6 +123,19 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
                                 alert('Please enter your Api Secret!');
                                 return false;
                             }
+                            if(jQuery('#woocommerce_pointcheckout_pay_allow_specific').val() == 1){
+                                if(!jQuery('#woocommerce_pointcheckout_pay_specific_countries').val()){
+                                	alert('You select to specifiy for applicable countries but you did not select any!');
+                                 return false;
+                                }
+                            }
+                            if(jQuery('#woocommerce_pointcheckout_pay_allow_user_specific').val() == 1){
+                                if(!jQuery('#woocommerce_pointcheckout_pay_specific_user_roles').val()){
+                                	alert('You select to specifiy for applicable user roles but you did not select any!');
+                                 return false;
+                                }
+                            }
+                            
                         })
                     });
                 </script>
@@ -99,13 +151,17 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
      */
     function init_form_fields()
     {
-        $staging_enabled=false;
+        $staging_enabled=true;
         $this->form_fields = array(
             'enabled'             => array(
                 'title'   => __('Enable/Disable', 'pointcheckout_pointcheckoutpay'),
-                'type'    => 'checkbox',
+                'type'    => 'select',
                 'label'   => __('Enable the PointCheckout gateway', 'pointcheckout_pointcheckoutpay'),
-                'default' => 'yes'
+                'default' => '0',
+                'options' =>array(
+                    '1' => __('Enabled', 'pointcheckout_pointcheckoutpay'),
+                    '0' => __('Disabled', 'pointcheckout_pointcheckoutpay'),
+                )
             ),
             'description'         => array(
                 'title'       => __('Description', 'pointcheckout_pointcheckoutpay'),
@@ -183,8 +239,59 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
                 'placeholder' => '',
                 'class'       => 'wc-enhanced-select',
             ),
+            'allow_specific'=>array(
+                'title'       => __('Applicable Countries', 'pointcheckout_pointcheckoutpay'),
+                'type'        => 'select',
+                'options'     => array(
+                    '0' => __('All Countries', 'pointcheckout_pointcheckoutpay'),
+                    '1' => __('Specific countries only', 'pointcheckout_pointcheckoutpay'))
+            ),
+            'specific_countries'=>array(
+                'title'   => __( 'Specific Countries','pointcheckout_pointcheckoutpay' ),
+                'desc'    => '',
+                'css'     => 'min-width: 350px;min-height:300px;',
+                'default' => 'wc_get_base_location()',
+                'type'    => 'multiselect',
+                'options' => $this->getCountries()
+            ),
+            'allow_user_specific'=>array(
+                'title'       => __('Applicable User Roles', 'pointcheckout_pointcheckoutpay'),
+                'type'        => 'select',
+                'options'     => array(
+                    '0' => __('All User Roles', 'pointcheckout_pointcheckoutpay'),
+                    '1' => __('Specific Roles only', 'pointcheckout_pointcheckoutpay'))
+            ),
+            'specific_user_roles'=>array(
+                'title'   => __( 'Specific User Roles','pointcheckout_pointcheckoutpay' ),
+                'desc'    => '',
+                'css'     => 'min-width: 350px;min-height:300px;',
+                'default' => 'wc_get_base_role()',
+                'type'    => 'multiselect',
+                'options' => $this->getRoles()
+            )
         );
     }
+    
+    
+    function getCountries(){
+        $countries_obj   = new WC_Countries();
+        $countries   = $countries_obj->__get('countries');
+        
+        return $countries;
+    }
+    
+    function getRoles(){
+        global $wp_roles;
+        $all_roles = $wp_roles->roles;
+        $editable_roles = apply_filters('editable_roles', $all_roles);
+        $user_roles = array();
+       
+        foreach ($editable_roles as $k => $v) {
+            $user_roles[$k]  = $k;
+        }
+        return $user_roles;
+    }
+    
 
     /**
      * Process the payment and return the result
@@ -228,7 +335,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
         global $woocommerce;
             //send the secound call to pointcheckout to confirm payment 
             $success = $this->pfPayment->handlePointCheckoutResponse();
-            $order = wc_get_order(WC()->session->get('order_awaiting_payment'));
+            $order = wc_get_order($_REQUEST['reference']);
             if ($success['success']) {
                 $order->payment_complete();
                 $order->add_order_note('PointCheckout payment confirmed');

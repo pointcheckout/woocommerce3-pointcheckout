@@ -20,7 +20,10 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
     private $orderPlacement;
     private $status;
     private $logFileDir;
-    
+    private $allowSpecific;
+    private $specific_countries;
+    private $allowUserSpecific;
+    private $specific_uesr_roles;
 
 
     public function __construct()
@@ -40,7 +43,10 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         $this->successOrderStatusId = '';
         $this->orderPlacement                        = $this->_getShoppingCartConfig('order_placement');
         $this->status                                = $this->enabled;
-        
+        $this->allowSpecific                         = $this->_getShoppingCartConfig('allow_specific');
+        $this->specific_countries                    = $this->_getShoppingCartConfig('specific_countries');
+        $this->allowUserSpecific                     = $this->_getShoppingCartConfig('allow_user_specific');
+        $this->specific_uesr_roles                    = $this->_getShoppingCartConfig('specific_user_roles');
     }
 
     /**
@@ -101,6 +107,22 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         }
         return false;
     }
+    
+    public function isSpecificCountries(){
+        return $this->allowSpecific == 1?true:false;
+    }
+    
+    public function getSpecificCountries(){
+        return $this->specific_countries;
+    }
+    
+    public function isSpecificUserRoles(){
+        return $this->allowUserSpecific == 1?true:false;
+    }
+    
+    public function getSpecificUserRoles(){
+        return $this->specific_uesr_roles;
+    }
 
     public function getOrderPlacement()
     {
@@ -123,7 +145,9 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         return false;
     }
 
-
+    public function isEnabled(){
+        return $this->enabled == 1?true:false;
+    }
 
     public function getApiKey(){
         return $this->Api_Key;
@@ -133,7 +157,7 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         return $this->Api_Secret;
     }
     
-    public function isTestMode(){
+    public function isLiveMode(){
         return $this->Mode == 1?true:false;
     }
     

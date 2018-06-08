@@ -12,6 +12,7 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
         parent::__construct();
         $this->pfConfig   = PointCheckout_PointCheckoutPay_Config::getInstance();
         $this->pfOrder    = new PointCheckout_PointCheckoutPay_Order();
+        $this->log        = wc_get_logger();
     }
 
     /**
@@ -88,6 +89,9 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
         return $gatewayParams;
     }
 
+    /**
+     * build payment form 
+     */
     public function getPaymentRequestForm()
     {
          
@@ -98,6 +102,8 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             $returnUrl = get_site_url().'?wc-api=wc_gateway_pointcheckout_process_response';
             WC()->session->set('checkoutId',$response->result->checkoutId);
         }else{
+            $this->paymentLog('Failed while sending first request to pointchckout resone: '.$response->error);
+            wc_add_notice( sprintf( __( 'Failed to process payment please try again later', 'error' )));
             $actionUrl = get_site_url().'/index.php/checkout';
         }
         $form = '<form style="display:none" name="frm_pointcheckout_payment" id="frm_pointcheckout_payment" method="GET" action="' . $actionUrl . '">';
@@ -106,7 +112,9 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
         
        
     }
-    
+    /**
+     * first call that to get checkout key from pointcheckout
+     */
     public function PointCheckoutApiCall($paymentRequestParams){
         $info = json_encode($paymentRequestParams);
         try {
@@ -124,11 +132,11 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_HTTPHEADER,$headers);
             curl_setopt($ch, CURLOPT_POSTFIELDS ,json_encode($paymentRequestParams));
-            // grab URL and pass it to the browser
+            // excecute first call 
             $response = curl_exec($ch);
             
         }catch(Exception $e){
-            $this->log('Failed while sending first request to pointchckout resone: '.$e->getMessage());
+            $this->paymentLog('Failed while sending first request to pointchckout resone: '.$e->getMessage());
             throw $e;
         }
        return json_decode($response);
@@ -144,26 +152,26 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
                 'Api-Key:'.$this->pfConfig->getApiKey(),
                 'Api-Secret:'.$this->pfConfig->getApiSecret()
             );
-            
-            $_BASE_URL=$this->getGatewayApiUrl().WC()->session->get('checkoutId');
+            WC()->session->set('pointCheckoutCurrentOrderId',$_REQUEST['reference']);
+            $_BASE_URL=$this->getGatewayApiUrl().$_REQUEST['checkout'];
             $ch = curl_init($_BASE_URL);
             
             // set URL and other appropriate options
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_HTTPHEADER,$headers);
-            // grab URL and pass it to the browser
+            //execute secound call 
             $response = curl_exec($ch);
             
         }catch(Exception $e){
-            $this->log('Failed while sending secound request to pointchckout resone: '.$e->getMessage());
+            $this->paymentLog('Failed while sending secound request to pointchckout resone: '.$e->getMessage());
             throw $e;
         }
         return $response;
     }
     
     public function getGatewayApiUrl(){
-        $testMode = $this->pfConfig->isTestMode();
-        if ($testMode) {
+        $liveMode = $this->pfConfig->isLiveMode();
+        if ($liveMode) {
            return $gatewayUrl = 'https://pay.pointcheckout.com/api/v1.0/checkout/';
         }elseif($this->pfConfig->isStagingMode()){
             return $gatewayUrl = 'https://pay.staging.pointcheckout.com/api/v1.0/checkout/';
@@ -174,8 +182,8 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
 
     
     public function getGatewayUrl(){
-        $testMode = $this->pfConfig->isTestMode();
-        if ($testMode) {
+        $liveMode = $this->pfConfig->isLiveMode();
+        if ($liveMode) {
             return $gatewayUrl = 'https://pay.pointcheckout.com/checkout/';
         }elseif($this->pfConfig->isStagingMode()){
             return $gatewayUrl = 'https://pay.staging.pointcheckout.com/checkout/';
@@ -193,13 +201,17 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             if (!$response &&  $response_info->success != true){    
                 return array(
                     'success' => false,
-                    'referenceId' => ''
+                    'referenceId' => WC()->session->get('pointCheckoutCurrentOrderId');
                 );
+                if($response){
+                    $this->paymentLog('ERROR '.$response_info->error);
+                }
             }elseif ($response_info->result->status != 'PAID' ){
                 return array(
                     'success' => false,
                     'referenceId' => $response_info->referenceId
                 );
+                $this->paymentLog('ERROR -- Can not complete a non paid payment for order Id : '.$response_info->referenceId);
             }
             return array(
                 'success' => true,
@@ -208,7 +220,7 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             
     }
     
-    public function log($messages, $forceDebug = false)
+    public function paymentLog($messages, $forceDebug = false)
     {
         if ( ! class_exists( 'WC_Logger' ) ) {
             include_once( 'class-wc-logger.php' );
