@@ -33,6 +33,12 @@ class PointCheckout_PointCheckoutPay_Order extends PointCheckout_PointCheckoutPa
     {
         return WC()->session->get('order_awaiting_payment');
     }
+    
+    public function clearSessionCurrentOrder()
+    {
+        return WC()->session->__unset('order_awaiting_payment');
+    }
+    
 
     public function getOrderId()
     {
