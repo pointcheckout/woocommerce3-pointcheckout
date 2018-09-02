@@ -31,6 +31,7 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
         $orderId = $this->pfOrder->getSessionOrderId();
         $order = wc_get_order($orderId);
         $this->pfOrder->loadOrder($orderId);
+        $order->update_status($this-pfConfig->getNewOrderStatus());
 
         $gatewayParams = array(
             'referenceId' => $orderId,
@@ -198,25 +199,59 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
     {
             $response = $this->PointCheckoutSecoundCall();
             $response_info = json_decode($response);
-            if (!$response &&  $response_info->success != true){    
-                return array(
-                    'success' => false,
-                    'referenceId' => WC()->session->get('pointCheckoutCurrentOrderId');
-                );
-                if($response){
-                    $this->paymentLog('ERROR '.$response_info->error);
+            $order = new WC_Order($_REQUEST['reference']);
+            
+            
+            if (!empty($order)) {
+                
+            
+                if (!$response &&  $response_info->success != true){   
+                    $order->update_status('canceled');
+                    return array(
+                        'success' => false,
+                        'referenceId' => WC()->session->get('pointCheckoutCurrentOrderId')
+                    );
+                    if($response){
+                        $order->update_status('canceled');
+                        $this->paymentLog('ERROR '.$response_info->error);
+                        $note = __("[ERROR] order canceled  :".$response_info->error);
+                        // Add the note
+                        $order->add_order_note( $note );
+                        // Save the data
+                        $order->save();
+                    }
+                }elseif ($response_info->result->status != 'PAID' ){
+                    $order->update_status('canceled');
+                    if($response_info->result->status == 'CANCELLED'){
+                        $note = __("payment canceled by user order cancelled");
+                    }else{
+                        $note = __("trying to confirm an order with payment status (".$response_info->result->status.") order canceled");
+                    }
+                    // Add the note
+                    $order->add_order_note( $note );
+                    // Save the data
+                    $order->save();
+                    return array(
+                        'success' => false,
+                        'referenceId' => $response_info->referenceId
+                    );
+                    $this->paymentLog('ERROR -- Can not complete a non paid payment for order Id : '.$response_info->referenceId);
                 }
-            }elseif ($response_info->result->status != 'PAID' ){
+                //$order->update_status( $this->pfConfig->getPaymentSuccessOrderStatus());
+                if($response_info->result->cod > 0){
+                    $note = __("Payment COD amount :".$response_info->result->cod);
+                    
+                    // Add the note
+                    $order->add_order_note( $note );
+                    
+                    // Save the data
+                    $order->save();
+                }
                 return array(
-                    'success' => false,
+                    'success' => true,
                     'referenceId' => $response_info->referenceId
                 );
-                $this->paymentLog('ERROR -- Can not complete a non paid payment for order Id : '.$response_info->referenceId);
             }
-            return array(
-                'success' => true,
-                'referenceId' => $response_info->referenceId
-            );
             
     }
     
