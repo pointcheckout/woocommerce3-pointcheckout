@@ -1,12 +1,10 @@
 # woocommerce3-pointcheckout
 woocommerce3-pointcheckout wooCommerce 3 on top of Word Press 4 extension for PointCheckout
 
-copy the extracted folder and all its content to your plugins directory and then you may go to 
 
-your-site-admin-page->plugins-> and then activate pointcheckout plugin
+This guide walks you through on how to setup PointCheckout as a payment method on magento 1.9
 
-then in woocommerce->settings->checkout
-
-select pointcheckout payment method and enter your settings
-
-thats it your store now is accepting points via PointCheckout.
+1- Download the extension zip file from releases tab
+2- Extract the extionsion and copy the extracted folder pointcheckout_pointcheckoutpay to  {store home}/wp-content/plugins
+3- Activate PointCheckout plugin under {admin} -> plugins -> Installed Plugins
+4- Manage PointCheckout settings from {admin} -> WooCommerce -> Settings -> Payments
