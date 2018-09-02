@@ -151,7 +151,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
      */
     function init_form_fields()
     {
-        $staging_enabled=true;
+        $staging_enabled = false;
         $this->form_fields = array(
             'enabled'             => array(
                 'title'   => __('Enable/Disable', 'pointcheckout_pointcheckoutpay'),
