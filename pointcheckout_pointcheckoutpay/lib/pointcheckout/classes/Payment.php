@@ -106,6 +106,7 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             wc_add_notice( sprintf( __( 'Failed to process payment please try again later', 'error' )));
             $actionUrl = get_site_url().'/index.php/checkout';
         }
+        $this->pfOrder->clearSessionCurrentOrder();
         $form = '<form style="display:none" name="frm_pointcheckout_payment" id="frm_pointcheckout_payment" method="GET" action="' . $actionUrl . '">';
         $form .= '<input type="submit">';
         return $form;
