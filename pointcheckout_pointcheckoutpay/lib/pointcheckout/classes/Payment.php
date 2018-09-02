@@ -31,7 +31,6 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
         $orderId = $this->pfOrder->getSessionOrderId();
         $order = wc_get_order($orderId);
         $this->pfOrder->loadOrder($orderId);
-        $order->update_status($this-pfConfig->getNewOrderStatus());
 
         $gatewayParams = array(
             'referenceId' => $orderId,
