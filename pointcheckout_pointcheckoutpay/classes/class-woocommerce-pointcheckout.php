@@ -202,15 +202,6 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
                 'desc_tip'    => true,
                 'placeholder' => ''
             ),
-            'New_Order_Status' => array(
-                'title'       => __('new order Status', 'pointcheckout_pointcheckoutpay'),
-                'type'        => 'select',
-                'options'     => wc_get_order_statuses(),
-                'description' => __('order status on checkout.', 'pointcheckout_pointcheckoutpay'),
-                'default'     => 'all',
-                'placeholder' => '',
-                'class'       => 'wc-enhanced-select',
-            ),
             'allow_specific'=>array(
                 'title'       => __('Applicable Countries', 'pointcheckout_pointcheckoutpay'),
                 'type'        => 'select',
