@@ -201,7 +201,7 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             if (!$response &&  $response_info->success != true){    
                 return array(
                     'success' => false,
-                    'referenceId' => WC()->session->get('pointCheckoutCurrentOrderId');
+                    'referenceId' => WC()->session->get('pointCheckoutCurrentOrderId')
                 );
                 if($response){
                     $this->paymentLog('ERROR '.$response_info->error);
