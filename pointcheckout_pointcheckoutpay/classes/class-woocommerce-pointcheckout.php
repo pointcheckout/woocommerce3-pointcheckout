@@ -17,7 +17,8 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
         }
         
         // Define user set variables
-        $this->title               = 'PointCheckout';
+        $this->method_title       = __( 'PointCheckout', 'woocommerce' );
+        $this->title               ='PointCheckout';
         $this->description  = __('Pay for your cart using PointCheckout payment method  '.'<a href="https://www.pointcheckout.com/info/what-is-pointcheckout" target="_blank" style="font-size:10px;">   more details about PointCheckout?</a>', 'pointcheckout_pointcheckoutpay');
         $this->pfConfig            = PointCheckout_PointCheckoutPay_Config::getInstance();
         $this->pfPayment           = PointCheckout_PointCheckoutPay_Payment::getInstance();
