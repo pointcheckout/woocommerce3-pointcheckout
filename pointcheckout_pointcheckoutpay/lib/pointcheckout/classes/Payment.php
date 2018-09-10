@@ -29,8 +29,9 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
     public function getPaymentRequestParams()
     {
         $orderId = $this->pfOrder->getSessionOrderId();
-        $order = wc_get_order($orderId);
+        $order = new WC_order($orderId);
         $this->pfOrder->loadOrder($orderId);
+        $order->update_status($this->pfConfig->getNewOrderStatus());
 
         $gatewayParams = array(
             'referenceId' => $orderId,
@@ -94,7 +95,10 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
      */
     public function getPaymentRequestForm()
     {
-         
+        
+        if(!$this->pfConfig->isEnabled()){            
+            return null;
+        }
         $paymentRequestParams = $this->getPaymentRequestParams();
         $response = $this->PointCheckoutApiCall($paymentRequestParams);
         if (($response->success == 'true' && $response->result->checkoutKey != null )) {
@@ -109,7 +113,12 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
         $this->pfOrder->clearSessionCurrentOrder();
         $form = '<form style="display:none" name="frm_pointcheckout_payment" id="frm_pointcheckout_payment" method="GET" action="' . $actionUrl . '">';
         $form .= '<input type="submit">';
-        return $form;
+        $formArray = array(
+            'form' => $form,
+            'response' => $response
+            
+        );
+        return $formArray;
         
        
     }
@@ -137,7 +146,7 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             $response = curl_exec($ch);
             
         }catch(Exception $e){
-            $this->paymentLog('Failed while sending first request to pointchckout resone: '.$e->getMessage());
+            $this->paymentLog('Failed to connect pointchckout resone: '.$e->getMessage());
             throw $e;
         }
        return json_decode($response);
@@ -164,7 +173,7 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             $response = curl_exec($ch);
             
         }catch(Exception $e){
-            $this->paymentLog('Failed while sending secound request to pointchckout resone: '.$e->getMessage());
+            $this->paymentLog('Failed to connect  to pointchckout resone: '.$e->getMessage());
             throw $e;
         }
         return $response;
@@ -198,61 +207,49 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
     public function handlePointCheckoutResponse()
     {
             $response = $this->PointCheckoutSecoundCall();
-            $response_info = json_decode($response);
             $order = new WC_Order($_REQUEST['reference']);
-            
             
             if (!empty($order)) {
                 
             
-                if (!$response &&  $response_info->success != true){   
+            $response_info = json_decode($response);
+            if (!$response ||  $response_info->success != true){    
                     $order->update_status('canceled');
-                    return array(
-                        'success' => false,
-                        'referenceId' => WC()->session->get('pointCheckoutCurrentOrderId')
-                    );
-                    if($response){
-                        $order->update_status('canceled');
-                        $this->paymentLog('ERROR '.$response_info->error);
-                        $note = __("[ERROR] order canceled  :".$response_info->error);
-                        // Add the note
-                        $order->add_order_note( $note );
-                        // Save the data
-                        $order->save();
-                    }
-                }elseif ($response_info->result->status != 'PAID' ){
-                    $order->update_status('canceled');
-                    if($response_info->result->status == 'CANCELLED'){
-                        $note = __("payment canceled by user order cancelled");
-                    }else{
-                        $note = __("trying to confirm an order with payment status (".$response_info->result->status.") order canceled");
-                    }
+                    $errorMsg = isset($response_info->error)?$response_info->error:'connecting to pointcheckout failed';
+                    $note = __("[ERROR] order canceled  :".$errorMsg);
                     // Add the note
                     $order->add_order_note( $note );
                     // Save the data
                     $order->save();
+                    $this->paymentLog('ERROR '.$errorMsg);
                     return array(
                         'success' => false,
-                        'referenceId' => $response_info->referenceId
+                        'referenceId' => isset($response_info->referenceId)?$response_info->referenceId:''
                     );
-                    $this->paymentLog('ERROR -- Can not complete a non paid payment for order Id : '.$response_info->referenceId);
                 }
-                //$order->update_status( $this->pfConfig->getPaymentSuccessOrderStatus());
-                if($response_info->result->cod > 0){
-                    $note = __("Payment COD amount :".$response_info->result->cod);
-                    
-                    // Add the note
-                    $order->add_order_note( $note );
-                    
-                    // Save the data
-                    $order->save();
-                }
+            if ($response_info->success == true && $response_info->result->status != 'PAID' ){
+                $order->update_status('canceled');
+                $note = __($this->getPointCheckoutOrderHistoryMessage($response_info->result->checkoutId,0,$response_info->result->status ,$response_info->result->currency));
+                // Add the note
+                $order->add_order_note( $note );
+                // Save the data
+                $order->save();
                 return array(
-                    'success' => true,
+                    'success' => false,
                     'referenceId' => $response_info->referenceId
                 );
             }
+            $note = __($this->getPointCheckoutOrderHistoryMessage($response_info->result->checkoutId,$response_info->result->cod,$response_info->result->status ,$response_info->result->currency));
+            // Add the note
+            $order->add_order_note( $note );
             
+            // Save the data
+            $order->save();
+            return array(
+                'success' => true,
+                'referenceId' => $response_info->referenceId
+            );
+            }
     }
     
     public function paymentLog($messages, $forceDebug = false)
@@ -264,6 +261,38 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_PointCheckout
             $this->log = new WC_Logger();
         }
         $this->log->add( 'pointcheckout_pay', $messages );
+    }
+    
+    
+    public function getPointCheckoutOrderHistoryMessage($checkout,$codAmount,$orderStatus,$currency) {
+        switch($orderStatus){
+            case 'PAID':
+                $color='style="color:green;"';
+                break;
+            case 'PENDING':
+                $color='style="color:blue;"';
+                break;
+            default:
+                $color='style="color:red;"';
+        }
+        $message = 'PointCheckout Status: <b '.$color.'>'.$orderStatus.'</b><br/>PointCheckout Transaction ID: <a href="'.$this->getAdminUrl().'/merchant/transactions/'.$checkout.'/read " target="_blank"><b>'.$checkout.'</b></a>'."\n" ;
+        if($codAmount>0){
+           $message.= '<b style="color:red;">[NOTICE] </b><i>COD Amount: <b>'.$codAmount.' '.$this->session->data['currency'].'</b></i>'."\n";
+        }
+        return $message;
+    }
+    
+    
+    private function getAdminUrl(){
+        if ($this->pfConfig->isStagingMode()){
+            $_ADMIN_URL='https://admin.staging.pointcheckout.com';
+        }elseif($this->pfConfig->isLiveMode()){
+            $_ADMIN_URL='https://admin.pointcheckout.com';
+        }else{
+            $_ADMIN_URL='https://admin.test.pointcheckout.com';
+        }
+        return $_ADMIN_URL;
+        
     }
     
 
