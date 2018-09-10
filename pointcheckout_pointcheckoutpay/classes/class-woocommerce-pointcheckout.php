@@ -31,7 +31,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
         
         // Save options
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-        add_action('woocommerce_wc_gateway_pointcheckout_process_response', array(&$this, 'process_response'));
+        add_action('woocommerce_wc_gateway_pointcheckout_process_response', array($this, 'process_response'));
     }
 
     function process_admin_options() {
@@ -277,7 +277,9 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
             update_post_meta($order->id, '_payment_method', POINTCHECKOUT_PAY_PAYMENT_METHOD);
          }
             $form   = $this->pfPayment->getPaymentRequestForm();
-            $result = array('result' => 'success', 'form' => $form);
+            $note = $this->pfPayment->getPointCheckoutOrderHistoryMessage($form['response']->result->checkoutId, 0, $form['response']->result->status, '');
+            $order->add_order_note( $note );
+            $result = array('result' => 'success', 'form' => $form['form']);
             if (isset($_POST['woocommerce_pay']) && isset($_POST['_wpnonce']) && wp_verify_nonce($_POST['_wpnonce'], 'woocommerce-pay')) {
                 wp_send_json($result);
                 exit;
@@ -302,14 +304,12 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
             $order = wc_get_order($_REQUEST['reference']);
             if ($success['success']) {
                 $order->payment_complete();
-                $order->add_order_note('PointCheckout payment confirmed');
                 WC()->session->set('refresh_totals', true);
                 $redirectUrl = $this->get_return_url($order);
             }
             else {
                 $redirectUrl = esc_url($woocommerce->cart->get_checkout_url());
                 $order->cancel_order();
-                $order->add_order_note('PointCheckout payment Failed');
             }
             echo '<script>window.top.location.href = "' . $redirectUrl . '"</script>';
             exit;

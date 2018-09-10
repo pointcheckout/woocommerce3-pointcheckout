@@ -1,8 +1,8 @@
 <?php
 
 /* Plugin Name: PointCheckout
- * Description: PointCheckout allows you to accept reward points as payments -- PointCheckout will take care of paying you with your local currency -- and that would means more and more customers visiting your store <a href="https://www.pointcheckout.com/home/merchant" target="_blank"><span>visit website</span></a>
- * Version:     0.1.1
+ * Description: PointCheckout allows your customer to pay for there cart using reward points from different programs as payments -- and that would means more and more customers visiting your store <a href="https://www.pointcheckout.com/home/merchant" target="_blank"><span>more details</span></a>
+ * Version:     1.0.0
  * Author:      PointCheckout
  * Author URI:  https://www.pointcheckout.com/
  */
