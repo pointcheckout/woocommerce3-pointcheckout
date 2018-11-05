@@ -10,15 +10,16 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
     {
         global $woocommerce;
         $this->has_fields = false;
-        $this->icon       = apply_filters('woocommerce_POINTCHECKOUT_icon', 'https://pointcheckout.com/image/logo.png');
+        $this->icon       = apply_filters('woocommerce_POINTCHECKOUT_icon', 'https://www.pointcheckout.com/image/logo.png');
         if(is_admin()) {
             $this->has_fields = true;
             $this->init_form_fields();
         }
         
         // Define user set variables
-        $this->title               = 'PointCheckout';
-        $this->description  = __('Pay for your items with using PointCheckout payment method', 'pointcheckout_pointcheckoutpay');
+        $this->method_title       = __( 'PointCheckout', 'woocommerce' );
+        $this->title               ='PointCheckout';
+        $this->description  = __('Pay for your cart using PointCheckout payment method  '.'<a href="https://www.pointcheckout.com/info/what-is-pointcheckout" target="_blank" style="font-size:10px;">   more details about PointCheckout?</a>', 'pointcheckout_pointcheckoutpay');
         $this->pfConfig            = PointCheckout_PointCheckoutPay_Config::getInstance();
         $this->pfPayment           = PointCheckout_PointCheckoutPay_Payment::getInstance();
         
@@ -30,7 +31,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
         
         // Save options
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-        add_action('woocommerce_wc_gateway_pointcheckout_process_response', array(&$this, 'process_response'));
+        add_action('woocommerce_wc_gateway_pointcheckout_process_response', array($this, 'process_response'));
     }
 
     function process_admin_options() {
@@ -186,18 +187,6 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
                 'placeholder' => '',
                 'class'       => 'wc-enhanced-select',
             ),
-            'language'            => array(
-                'title'       => __('Language', 'pointcheckout_pointcheckoutpay'),
-                'type'        => 'select',
-                'options'     => array(
-                    'en'    => __('English (en)', 'pointcheckout_pointcheckoutpay'),
-                ),
-                'description' => __('The language of the payment page.', 'pointcheckout_pointcheckoutpay'),
-                'default'     => 'en',
-                'desc_tip'    => true,
-                'placeholder' => '',
-                'class'       => 'wc-enhanced-select',
-            ),
             'Api_Key'         => array(
                 'title'       => __('Api Key', 'pointcheckout_pointcheckoutpay'),
                 'type'        => 'text',
@@ -213,31 +202,6 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
                 'default'     => '',
                 'desc_tip'    => true,
                 'placeholder' => ''
-            ),
-            'command'             => array(
-                'title'       => __('Command', 'pointcheckout_pointcheckoutpay'),
-                'type'        => 'select',
-                'options'     => array(
-                                       'AUTHORIZATION' => __('AUTHORIZATION', 'pointcheckout_pointcheckoutpay'),
-                                       'PURCHASE'      => __('PURCHASE', 'pointcheckout_pointcheckoutpay')
-                ),
-                'description' => __('Order operation to be used in the payment page.', 'pointcheckout_pointcheckoutpay'),
-                'default'     => '',
-                'desc_tip'    => true,
-                'placeholder' => '',
-                'class'       => 'wc-enhanced-select',
-            ),
-            
-            'order_placement' => array(
-                'title'       => __('Order Placement', 'pointcheckout_pointcheckoutpay'),
-                'type'        => 'select',
-                'options'     => array(
-                                       'all' => __('All', 'pointcheckout_pointcheckoutpay'),
-                                       'success' => __('Success', 'pointcheckout_pointcheckoutpay'),
-                ),
-                'default'     => 'all',
-                'placeholder' => '',
-                'class'       => 'wc-enhanced-select',
             ),
             'allow_specific'=>array(
                 'title'       => __('Applicable Countries', 'pointcheckout_pointcheckoutpay'),
@@ -313,7 +277,9 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
             update_post_meta($order->id, '_payment_method', POINTCHECKOUT_PAY_PAYMENT_METHOD);
          }
             $form   = $this->pfPayment->getPaymentRequestForm();
-            $result = array('result' => 'success', 'form' => $form);
+            $note = $this->pfPayment->getPointCheckoutOrderHistoryMessage($form['response']->result->checkoutId, 0, $form['response']->result->status, '');
+            $order->add_order_note( $note );
+            $result = array('result' => 'success', 'form' => $form['form']);
             if (isset($_POST['woocommerce_pay']) && isset($_POST['_wpnonce']) && wp_verify_nonce($_POST['_wpnonce'], 'woocommerce-pay')) {
                 wp_send_json($result);
                 exit;
@@ -338,14 +304,12 @@ class WC_Gateway_PointCheckout extends PointCheckout_PointCheckoutPay_Super
             $order = wc_get_order($_REQUEST['reference']);
             if ($success['success']) {
                 $order->payment_complete();
-                $order->add_order_note('PointCheckout payment confirmed');
                 WC()->session->set('refresh_totals', true);
                 $redirectUrl = $this->get_return_url($order);
             }
             else {
                 $redirectUrl = esc_url($woocommerce->cart->get_checkout_url());
                 $order->cancel_order();
-                $order->add_order_note('PointCheckout payment Failed');
             }
             echo '<script>window.top.location.href = "' . $redirectUrl . '"</script>';
             exit;

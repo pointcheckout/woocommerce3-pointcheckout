@@ -15,15 +15,13 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
     private $Api_Key;
     private $command;
     private $Mode;
-    private $gatewayCurrency;
-    private $successOrderStatusId;
     private $orderPlacement;
-    private $status;
     private $logFileDir;
     private $allowSpecific;
     private $specific_countries;
     private $allowUserSpecific;
     private $specific_uesr_roles;
+    private $new_order_status; 
 
 
     public function __construct()
@@ -39,14 +37,12 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         $this->command                               = $this->_getShoppingCartConfig('command');
         $this->Api_Secret                            = $this->_getShoppingCartConfig('Api_Secret');
         $this->Mode                                  = $this->_getShoppingCartConfig('mode');
-        $this->gatewayCurrency                       = 'base';
-        $this->successOrderStatusId = '';
         $this->orderPlacement                        = $this->_getShoppingCartConfig('order_placement');
-        $this->status                                = $this->enabled;
         $this->allowSpecific                         = $this->_getShoppingCartConfig('allow_specific');
         $this->specific_countries                    = $this->_getShoppingCartConfig('specific_countries');
         $this->allowUserSpecific                     = $this->_getShoppingCartConfig('allow_user_specific');
-        $this->specific_uesr_roles                    = $this->_getShoppingCartConfig('specific_user_roles');
+        $this->specific_uesr_roles                   = $this->_getShoppingCartConfig('specific_user_roles');
+        $this->new_order_status                      = $this->_getShoppingCartConfig('new_order_status');
     }
 
     /**
@@ -83,11 +79,7 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
     }
 
 
-    public function getGatewayCurrency()
-    {
-        return $this->gatewayCurrency;
-    }
-
+   
 
 
     public function getSuccessOrderStatusId()
@@ -95,10 +87,7 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         return $this->successOrderStatusId;
     }
 
-    public function getStatus()
-    {
-        return $this->status;
-    }
+    
 
     public function isActive()
     {
@@ -124,6 +113,13 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_PointCheckoutP
         return $this->specific_uesr_roles;
     }
 
+    
+    public function getNewOrderStatus(){
+        return $this->new_order_status;
+    }
+        
+    
+    
     public function getOrderPlacement()
     {
         return $this->orderPlacement;
