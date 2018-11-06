@@ -1,10 +1,10 @@
 
 
 jQuery('form.checkout').on('submit', function (e){
-    e.preventDefault();
-    e.stopImmediatePropagation();
     var paymentMethod = jQuery('input[name=payment_method]:checked').val();
     if("pointcheckout_pay" === paymentMethod ) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         return pointcheckoutFormHandler(jQuery(this));
     }
 });
