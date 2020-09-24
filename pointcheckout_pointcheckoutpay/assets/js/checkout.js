@@ -1,8 +1,11 @@
 
 
-jQuery('form.checkout').on('submit', function (e){
+var extensionName = '<?php echo POINTCHECKOUT_EXTENSION_NAME ?>';
+
+
+jQuery('form.checkout').on('submit', function (e) {
     var paymentMethod = jQuery('input[name=payment_method]:checked').val();
-    if("pointcheckout_pay" === paymentMethod ) {
+    if (extensionName === paymentMethod) {
         e.preventDefault();
         e.stopImmediatePropagation();
         return pointcheckoutFormHandler(jQuery(this));
@@ -12,22 +15,22 @@ jQuery('form.checkout').on('submit', function (e){
 
 function showError(form, data) {
     // Remove notices from all sources
-    jQuery( '.woocommerce-error, .woocommerce-message' ).remove();
+    jQuery('.woocommerce-error, .woocommerce-message').remove();
 
     // Add new errors returned by this event
-    if ( data.messages ) {
-            form.prepend( '<div class="woocommerce-NoticeGroup-updateOrderReview">' + data.messages + '</div>' );
+    if (data.messages) {
+        form.prepend('<div class="woocommerce-NoticeGroup-updateOrderReview">' + data.messages + '</div>');
     } else {
-            form.prepend( data );
+        form.prepend(data);
     }
 
     // Lose focus for all fields
-    form.find( '.input-text, select, input:checkbox' ).blur();
+    form.find('.input-text, select, input:checkbox').blur();
 
     // Scroll to top
-    jQuery( 'html, body' ).animate( {
-            scrollTop: ( jQuery( form ).offset().top - 100 )
-    }, 1000 );
+    jQuery('html, body').animate({
+        scrollTop: (jQuery(form).offset().top - 100)
+    }, 1000);
 }
 
 function pointcheckoutFormHandler(form) {
@@ -37,7 +40,7 @@ function pointcheckoutFormHandler(form) {
 
 
 function initPointCheckoutPayment(form) {
-	var data = jQuery(form).serialize();
+    var data = jQuery(form).serialize();
     var ajaxUrl = wc_checkout_params.checkout_url;
     jQuery.ajax({
         'url': ajaxUrl,
@@ -47,24 +50,24 @@ function initPointCheckoutPayment(form) {
         'async': false
     }).complete(function (response) {
         data = '';
-        if(response.form) {
+        if (response.form) {
             data = response;
         }
-        else{
+        else {
             var code = response.responseText;
             var newstring = code.replace(/<script[^>]*>(.*)<\/script>/, "");
             if (newstring.indexOf("<!--WC_START-->") >= 0) {
-                    newstring = newstring.split("<!--WC_START-->")[1];
+                newstring = newstring.split("<!--WC_START-->")[1];
             }
             if (newstring.indexOf("<!--WC_END-->") >= 0) {
-                    newstring = newstring.split("<!--WC_END-->")[0];
+                newstring = newstring.split("<!--WC_END-->")[0];
             }
             try {
-                data = jQuery.parseJSON( newstring );
+                data = jQuery.parseJSON(newstring);
             }
-            catch(e) {}
+            catch (e) { }
         }
-        if(data.result == 'failure') {
+        if (data.result == 'failure') {
             showError(form, data);
             return !1;
         }
@@ -72,7 +75,7 @@ function initPointCheckoutPayment(form) {
             jQuery('#frm_pointcheckout_payment').remove();
             jQuery('body').append(data.form);
             window.success = true;
-            jQuery( "#frm_pointcheckout_payment" ).submit();
+            jQuery("#frm_pointcheckout_payment").submit();
         }
     });
 }
