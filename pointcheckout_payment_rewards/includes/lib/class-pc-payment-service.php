@@ -2,7 +2,7 @@
 
 
 
-class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_Parent
+class PointCheckout_Rewards_Payment extends PointCheckout_Rewards_Parent
 {
 
     private static $instance;
@@ -13,15 +13,15 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_Parent
     public function __construct()
     {
         parent::__construct();
-        $this->pcOrder = new PointCheckout_PointCheckoutPay_Order();
-        $this->pcConfig = PointCheckout_PointCheckoutPay_Config::getInstance();
-        $this->pcUtils = new PointCheckout_PointCheckoutPay_Utils();
+        $this->pcOrder = new PointCheckout_Rewards_Order();
+        $this->pcConfig = PointCheckout_Rewards_Config::getInstance();
+        $this->pcUtils = new PointCheckout_Rewards_Utils();
     }
 
     public static function getInstance()
     {
         if (self::$instance === null) {
-            self::$instance = new PointCheckout_PointCheckoutPay_Payment();
+            self::$instance = new PointCheckout_Rewards_Payment();
         }
         return self::$instance;
     }
@@ -62,7 +62,8 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_Parent
         $params['subtotal'] = $this->pcOrder->getSubtotal();
         $params['discount'] = $this->pcOrder->getDiscountAmount();
         $params['currency'] = $this->pcOrder->getCurrencyCode();
-        $params['paymentMethods'] = ["CARD"];
+        $params['paymentMethods'] = ["POINTCHECKOUT"];
+        $params['resultUrl'] = get_site_url() . "?wc-api=wc_gateway_pointcheckout_rewards_process_response";
 
         $customer = array();
 
@@ -124,7 +125,7 @@ class PointCheckout_PointCheckoutPay_Payment extends PointCheckout_Parent
 
     public function postCheckout($paymentRequestParams)
     {
-        return $this->pcUtils->apiCall("/", $paymentRequestParams);
+        return $this->pcUtils->apiCall("", $paymentRequestParams);
     }
 
 

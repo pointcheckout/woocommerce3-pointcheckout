@@ -2,7 +2,7 @@
 require_once dirname( __FILE__ ) . '/lib/index.php';
 
 
-class WC_Gateway_PointCheckout extends PointCheckout_Parent
+class WC_Gateway_PointCheckout_Rewards extends PointCheckout_Rewards_Parent
 {
     public $paymentService;
     public $config;
@@ -10,7 +10,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
     public function __construct()
     {
         $this->has_fields = false;
-        $this->icon       = apply_filters('woocommerce_POINTCHECKOUT_icon', 'https://www.pointcheckout.com/img/logo/logo.svg');
+        $this->icon       = apply_filters('woocommerce_POINTCHECKOUT_icon', 'https://www.pointcheckout.com/en/image/logo.png');
         if (is_admin()) {
             $this->has_fields = true;
             $this->init_form_fields();
@@ -19,9 +19,9 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
         // Define user set variables
         $this->method_title = __('PointCheckout', 'woocommerce');
         $this->title = 'PointCheckout';
-        $this->description = __('Pay for your cart using PointCheckout payment method  ' . '<a href="https://www.pointcheckout.com/info/what-is-pointcheckout" target="_blank" style="font-size:10px;">   more details about PointCheckout?</a>', 'pointcheckout_pointcheckoutpay');
-        $this->paymentService = PointCheckout_PointCheckoutPay_Payment::getInstance();
-        $this->config = PointCheckout_PointCheckoutPay_Config::getInstance();
+        $this->description = 'Pay using your loyalty points with PointCheckout';
+        $this->paymentService = PointCheckout_Rewards_Payment::getInstance();
+        $this->config = PointCheckout_Rewards_Config::getInstance();
 
         // Actions
         add_action('woocommerce_receipt_' . $this->id, array($this, 'receipt_page'));
@@ -29,17 +29,16 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
 
         // Save options
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-        add_action('woocommerce_wc_gateway_pointcheckout_process_response', array($this, 'process_response'));
+        add_action('woocommerce_wc_gateway_pointcheckout_rewards_process_response', array($this, 'process_response'));
     }
 
     function process_admin_options()
     {
         $result = parent::process_admin_options();
         $settings = $this->settings;
-        $pointcheckoutSettings = array();
-        $pointcheckoutSettings['enabled']  = isset($settings['enabled']) ? $settings['enabled'] : 0;
+        $settings['enabled']  = isset($settings['enabled']) ? $settings['enabled'] : 0;
 
-        update_option('woocommerce_pointcheckout_settings', apply_filters('woocommerce_settings_api_sanitized_fields_pointcheckout', $pointcheckoutSettings));
+        update_option('woocommerce_pointcheckout_rewards_settings', apply_filters('woocommerce_settings_api_sanitized_fields_pointcheckout_rewards', $settings));
         return $result;
     }
 
@@ -88,7 +87,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
         if (!is_checkout()) {
             return;
         }
-        wp_enqueue_script('pointcheckoutpayjs-checkout', POINTCHECKOUT_URL . 'assets/js/checkout.js', array(), WC_VERSION, true);
+        wp_enqueue_script('pointcheckoutrewardsjs-checkout', plugin_dir_url(__FILE__) . '../assets/js/checkout.js', array(), WC_VERSION, true);
     }
 
     /**
@@ -100,8 +99,8 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
     public function admin_options()
     {
 ?>
-        <h3><?php _e('PointCheckout', 'pointcheckout_pointcheckoutpay'); ?></h3>
-        <p><?php _e('Please fill in the below section to start accepting payments on your site! You can find all the required information in your <a href="https://www.pointcheckout.com/" target="_blank">PointCheckout website</a>.', 'pointcheckout_pointcheckoutpay'); ?></p>
+        <h3><?php _e('PointCheckout', 'pointcheckout_rewards'); ?></h3>
+        <p><?php _e('Please fill in the below section to start accepting payments on your site! You can find all the required information in your <a href="https://www.pointcheckout.com/" target="_blank">PointCheckout website</a>.', 'pointcheckout_rewards'); ?></p>
 
 
         <table class="form-table">
@@ -112,22 +111,22 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
             <script>
                 jQuery(document).ready(function() {
                     jQuery('[name=save]').click(function() {
-                        if (!jQuery('#woocommerce_pointcheckout_pay_Api_Key').val()) {
+                        if (!jQuery('#woocommerce_pointcheckout_rewards_Api_Key').val()) {
                             alert('Please enter your Api Key!');
                             return false;
                         }
-                        if (!jQuery('#woocommerce_pointcheckout_pay_Api_Secret').val()) {
+                        if (!jQuery('#woocommerce_pointcheckout_rewards_Api_Secret').val()) {
                             alert('Please enter your Api Secret!');
                             return false;
                         }
-                        if (jQuery('#woocommerce_pointcheckout_pay_allow_specific').val() == 1) {
-                            if (!jQuery('#woocommerce_pointcheckout_pay_specific_countries').val()) {
+                        if (jQuery('#woocommerce_pointcheckout_rewards_allow_specific').val() == 1) {
+                            if (!jQuery('#woocommerce_pointcheckout_rewards_specific_countries').val()) {
                                 alert('You select to specifiy for applicable countries but you did not select any!');
                                 return false;
                             }
                         }
-                        if (jQuery('#woocommerce_pointcheckout_pay_allow_user_specific').val() == 1) {
-                            if (!jQuery('#woocommerce_pointcheckout_pay_specific_user_roles').val()) {
+                        if (jQuery('#woocommerce_pointcheckout_rewards_allow_user_specific').val() == 1) {
+                            if (!jQuery('#woocommerce_pointcheckout_rewards_specific_user_roles').val()) {
                                 alert('You select to specifiy for applicable user roles but you did not select any!');
                                 return false;
                             }
@@ -152,64 +151,64 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
         $staging_enabled = false;
         $this->form_fields = array(
             'enabled'             => array(
-                'title'   => __('Enable/Disable', 'pointcheckout_pointcheckoutpay'),
+                'title'   => __('Enable/Disable', 'pointcheckout_rewards'),
                 'type'    => 'select',
-                'label'   => __('Enable the PointCheckout gateway', 'pointcheckout_pointcheckoutpay'),
+                'label'   => __('Enable the PointCheckout gateway', 'pointcheckout_rewards'),
                 'default' => '0',
                 'options' => array(
-                    '1' => __('Enabled', 'pointcheckout_pointcheckoutpay'),
-                    '0' => __('Disabled', 'pointcheckout_pointcheckoutpay'),
+                    '1' => __('Enabled', 'pointcheckout_rewards'),
+                    '0' => __('Disabled', 'pointcheckout_rewards'),
                 )
             ),
             'description'         => array(
-                'title'       => __('Description', 'pointcheckout_pointcheckoutpay'),
+                'title'       => __('Description', 'pointcheckout_rewards'),
                 'type'        => 'text',
-                'description' => __('This is the description the user sees during checkout.', 'pointcheckout_pointcheckoutpay'),
-                'default'     => __('Pay for your items with your collected reward points', 'pointcheckout_pointcheckoutpay')
+                'description' => __('This is the description the user sees during checkout.', 'pointcheckout_rewards'),
+                'default'     => __('Pay for your items with your collected reward points', 'pointcheckout_rewards')
             ),
             'mode'          => array(
-                'title'       => __('Mode', 'pointcheckout_pointcheckoutpay'),
+                'title'       => __('Mode', 'pointcheckout_rewards'),
                 'type'        => 'select',
                 'options'     => $staging_enabled ? array(
-                    '1' => __('live', 'pointcheckout_pointcheckoutpay'),
-                    '0' => __('testing', 'pointcheckout_pointcheckoutpay'),
-                    '2' => __('Staging', 'pointcheckout_pointcheckoutpay'),
+                    '1' => __('live', 'pointcheckout_rewards'),
+                    '0' => __('testing', 'pointcheckout_rewards'),
+                    '2' => __('Staging', 'pointcheckout_rewards'),
                 ) : array(
-                    '1' => __('live', 'pointcheckout_pointcheckoutpay'),
-                    '0' => __('testing', 'pointcheckout_pointcheckoutpay'),
+                    '1' => __('live', 'pointcheckout_rewards'),
+                    '0' => __('testing', 'pointcheckout_rewards'),
                 ),
                 'default'     => '0',
                 'desc_tip'    => true,
-                'description' => sprintf(__('Logs additional information. <br>Log file path: %s', 'pointcheckout_pointcheckoutpay'), 'Your admin panel -> WooCommerce -> System Status -> Logs'),
+                'description' => sprintf(__('Logs additional information. <br>Log file path: %s', 'pointcheckout_rewards'), 'Your admin panel -> WooCommerce -> System Status -> Logs'),
                 'placeholder' => '',
                 'class'       => 'wc-enhanced-select',
             ),
             'Api_Key'         => array(
-                'title'       => __('Api Key', 'pointcheckout_pointcheckoutpay'),
+                'title'       => __('Api Key', 'pointcheckout_rewards'),
                 'type'        => 'text',
-                'description' => __('Your Api Key, you can find in your PointCheckout account  settings.', 'pointcheckout_pointcheckoutpay'),
+                'description' => __('Your Api Key, you can find in your PointCheckout account  settings.', 'pointcheckout_rewards'),
                 'default'     => '',
                 'desc_tip'    => true,
                 'placeholder' => ''
             ),
             'Api_Secret'         => array(
-                'title'       => __('Api Secret', 'pointcheckout_pointcheckoutpay'),
+                'title'       => __('Api Secret', 'pointcheckout_rewards'),
                 'type'        => 'text',
-                'description' => __('Your Api Secret, you can find in your PointCheckout account  settings.', 'pointcheckout_pointcheckoutpay'),
+                'description' => __('Your Api Secret, you can find in your PointCheckout account  settings.', 'pointcheckout_rewards'),
                 'default'     => '',
                 'desc_tip'    => true,
                 'placeholder' => ''
             ),
             'allow_specific' => array(
-                'title'       => __('Applicable Countries', 'pointcheckout_pointcheckoutpay'),
+                'title'       => __('Applicable Countries', 'pointcheckout_rewards'),
                 'type'        => 'select',
                 'options'     => array(
-                    '0' => __('All Countries', 'pointcheckout_pointcheckoutpay'),
-                    '1' => __('Specific countries only', 'pointcheckout_pointcheckoutpay')
+                    '0' => __('All Countries', 'pointcheckout_rewards'),
+                    '1' => __('Specific countries only', 'pointcheckout_rewards')
                 )
             ),
             'specific_countries' => array(
-                'title'   => __('Specific Countries', 'pointcheckout_pointcheckoutpay'),
+                'title'   => __('Specific Countries', 'pointcheckout_rewards'),
                 'desc'    => '',
                 'css'     => 'min-width: 350px;min-height:300px;',
                 'default' => 'wc_get_base_location()',
@@ -217,15 +216,15 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
                 'options' => $this->getCountries()
             ),
             'allow_user_specific' => array(
-                'title'       => __('Applicable User Roles', 'pointcheckout_pointcheckoutpay'),
+                'title'       => __('Applicable User Roles', 'pointcheckout_rewards'),
                 'type'        => 'select',
                 'options'     => array(
-                    '0' => __('All User Roles', 'pointcheckout_pointcheckoutpay'),
-                    '1' => __('Specific Roles only', 'pointcheckout_pointcheckoutpay')
+                    '0' => __('All User Roles', 'pointcheckout_rewards'),
+                    '1' => __('Specific Roles only', 'pointcheckout_rewards')
                 )
             ),
             'specific_user_roles' => array(
-                'title'   => __('Specific User Roles', 'pointcheckout_pointcheckoutpay'),
+                'title'   => __('Specific User Roles', 'pointcheckout_rewards'),
                 'desc'    => '',
                 'css'     => 'min-width: 350px;min-height:300px;',
                 'default' => 'wc_get_base_role()',
@@ -262,7 +261,7 @@ class WC_Gateway_PointCheckout extends PointCheckout_Parent
         $order   = new WC_Order($order_id);
         if (!isset($_GET['response_code'])) {
             update_post_meta($order->id, '_payment_method_title', 'PointCheckout');
-            update_post_meta($order->id, '_payment_method', POINTCHECKOUT_PAYMENT_METHOD);
+            update_post_meta($order->id, '_payment_method', 'pointcheckout_rewards');
         }
         $form   = $this->paymentService->getPaymentRequestForm();
         $note = $this->paymentService->getOrderHistoryMessage($form['response']->result->id, 0, $form['response']->result->status, '');

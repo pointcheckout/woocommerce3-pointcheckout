@@ -1,6 +1,6 @@
 <?php
 
-class PointCheckout_PointCheckoutPay_Utils extends PointCheckout_Parent
+class PointCheckout_Rewards_Utils extends PointCheckout_Rewards_Parent
 {
 
     private $logger;
@@ -9,8 +9,8 @@ class PointCheckout_PointCheckoutPay_Utils extends PointCheckout_Parent
     public function __construct()
     {
         parent::__construct();
-        $this->pcOrder = new PointCheckout_PointCheckoutPay_Order();
-        $this->pcConfig = PointCheckout_PointCheckoutPay_Config::getInstance();
+        $this->pcOrder = new PointCheckout_Rewards_Order();
+        $this->pcConfig = PointCheckout_Rewards_Config::getInstance();
     }
 
     public function getLogger()
@@ -33,7 +33,7 @@ class PointCheckout_PointCheckoutPay_Utils extends PointCheckout_Parent
                 'X-PointCheckout-Api-Secret:' . $this->pcConfig->getApiSecret()
             );
 
-            $_BASE_URL = self::getApiBaseUrl() . $url;
+            $_BASE_URL = $this->getApiBaseUrl() . $url;
 
             $ch = curl_init($_BASE_URL);
 
@@ -45,7 +45,7 @@ class PointCheckout_PointCheckoutPay_Utils extends PointCheckout_Parent
 
             $response = curl_exec($ch);
         } catch (Exception $e) {
-            self::log('Failed to connect  to pointchckout resone: ' . $e->getMessage());
+            $this->log('Failed to connect  to pointchckout resone: ' . $e->getMessage());
             throw $e;
         }
 
@@ -54,7 +54,7 @@ class PointCheckout_PointCheckoutPay_Utils extends PointCheckout_Parent
 
     public function log($messages)
     {
-        self::getLogger()->add('pointcheckout_pay', $messages);
+        $this->getLogger()->add('pointcheckout_rewards', $messages);
     }
 
     public function getApiBaseUrl()

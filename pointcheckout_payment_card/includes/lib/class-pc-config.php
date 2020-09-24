@@ -2,7 +2,7 @@
 
 
 
-class PointCheckout_PointCheckoutPay_Config extends PointCheckout_Parent
+class PointCheckout_Card_Config extends PointCheckout_Card_Parent
 {
 
     private static $instance;
@@ -15,7 +15,7 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_Parent
     private $allowUserSpecific;
     private $specific_uesr_roles;
     private $new_order_status;
-
+    public $description;
 
     public function __construct()
     {
@@ -32,6 +32,7 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_Parent
         $this->allowUserSpecific                     = $this->_getShoppingCartConfig('allow_user_specific');
         $this->specific_uesr_roles                   = $this->_getShoppingCartConfig('specific_user_roles');
         $this->new_order_status                      = $this->_getShoppingCartConfig('new_order_status');
+        $this->description                           = $this->_getShoppingCartConfig('description');
     }
 
     /**
@@ -40,7 +41,7 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_Parent
     public static function getInstance()
     {
         if (self::$instance === null) {
-            self::$instance = new PointCheckout_PointCheckoutPay_Config();
+            self::$instance = new PointCheckout_Card_Config();
         }
         return self::$instance;
     }
@@ -158,5 +159,10 @@ class PointCheckout_PointCheckoutPay_Config extends PointCheckout_Parent
     public function isStagingMode()
     {
         return $this->Mode == 2 ? true : false;
+    }
+
+    public function getDescription()
+    {
+        return $this->description;
     }
 }
