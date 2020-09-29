@@ -1,17 +1,10 @@
 <?php
 
-class PointCheckout_PointCheckoutPay_Order extends PointCheckout_PointCheckoutPay_Super
+class PointCheckout_Card_Order extends PointCheckout_Card_Parent
 {
 
     private $order = array();
     private $orderId;
-    private $pfConfig;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->pfConfig = PointCheckout_PointCheckoutPay_Config::getInstance();
-    }
 
     public function loadOrder($orderId)
     {
@@ -112,5 +105,3 @@ class PointCheckout_PointCheckoutPay_Order extends PointCheckout_PointCheckoutPa
     }
 
 }
-
-?>

@@ -2,7 +2,7 @@
 
 jQuery('form.checkout').on('submit', function (e){
     var paymentMethod = jQuery('input[name=payment_method]:checked').val();
-    if("pointcheckout_pay" === paymentMethod ) {
+    if("pointcheckout_rewards" === paymentMethod ) {
         e.preventDefault();
         e.stopImmediatePropagation();
         return pointcheckoutFormHandler(jQuery(this));
