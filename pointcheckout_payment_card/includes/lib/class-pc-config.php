@@ -16,6 +16,8 @@ class PointCheckout_Card_Config extends PointCheckout_Card_Parent
     private $specific_uesr_roles;
     private $new_order_status;
     public $description;
+    public $title;
+    
 
     public function __construct()
     {
@@ -33,6 +35,7 @@ class PointCheckout_Card_Config extends PointCheckout_Card_Parent
         $this->specific_uesr_roles                   = $this->_getShoppingCartConfig('specific_user_roles');
         $this->new_order_status                      = $this->_getShoppingCartConfig('new_order_status');
         $this->description                           = $this->_getShoppingCartConfig('description');
+        $this->title                                 = $this->_getShoppingCartConfig('title');
     }
 
     /**
@@ -164,5 +167,12 @@ class PointCheckout_Card_Config extends PointCheckout_Card_Parent
     public function getDescription()
     {
         return $this->description;
+    }
+
+    public function getTitle() {
+        if ( empty($this->title)) {
+            return "Card";
+        }
+        return $this->title;
     }
 }

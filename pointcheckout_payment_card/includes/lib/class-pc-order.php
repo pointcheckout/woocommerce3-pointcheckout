@@ -40,8 +40,7 @@ class PointCheckout_Card_Order extends PointCheckout_Card_Parent
 
     public function getOrderById($orderId)
     {
-        $order = wc_get_order($orderId);
-        return $order;
+        return wc_get_order($orderId);
     }
 
     public function getLoadedOrder()
@@ -56,12 +55,10 @@ class PointCheckout_Card_Order extends PointCheckout_Card_Parent
 
     public function getCustomerName()
     {
-        $fullName  = '';
         $firstName = $this->order->billing_first_name;
         $lastName  = $this->order->billing_last_name;
 
-        $fullName = trim($firstName . ' ' . $lastName);
-        return $fullName;
+        return trim($firstName . ' ' . $lastName);
     }
 
     public function getCurrencyCode()
