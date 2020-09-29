@@ -52,7 +52,7 @@ class PointCheckout_Card_Utils extends PointCheckout_Card_Parent
         if ($this->pcConfig->isLiveMode()) {
             return 'https://api.pointcheckout.com/mer/v1.2/checkouts/';
         } elseif ($this->pcConfig->isStagingMode()) {
-            return 'https://api.test.pointcheckout.com/mer/v1.2/checkouts/';
+            return 'https://api.staging.pointcheckout.com/mer/v1.2/checkouts/';
         } else {
             return 'https://api.test.pointcheckout.com/mer/v1.2/checkouts/';
         }

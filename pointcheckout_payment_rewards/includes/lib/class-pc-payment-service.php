@@ -65,28 +65,33 @@ class PointCheckout_Rewards_Payment extends PointCheckout_Rewards_Parent
         $params['paymentMethods'] = ["POINTCHECKOUT"];
         $params['resultUrl'] = get_site_url() . "?wc-api=wc_gateway_pointcheckout_rewards_process_response";
 
+        // CUSTOMER
         $customer = array();
+        $customer['id'] = $order->get_customer_id();
+        $customer['firstName'] = $order->get_billing_first_name();
+        $customer['lastName'] = $order->get_billing_last_name();
+        $customer['email'] = $order->get_billing_email();
+        $customer['phone'] = $order->get_billing_phone();
 
+        // BILLING ADDRESS
         $billingAddress = array();
         $billingAddress['name'] = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
         $billingAddress['address1'] = $order->get_billing_address_1();
         $billingAddress['address2'] = $order->get_billing_address_2();
         $billingAddress['city'] = $order->get_billing_city();
+        $billingAddress['state'] = $order->get_billing_state();
         $billingAddress['country'] = $order->get_billing_country();
+        $customer['billingAddress'] = $billingAddress;
 
+        // SHIPPING ADDRESS
         $shippingAddress = array();
         $shippingAddress['name'] = $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name();
         $shippingAddress['address1'] = $order->get_shipping_address_1();
         $shippingAddress['address2'] = $order->get_shipping_address_2();
         $shippingAddress['city'] = $order->get_shipping_city();
         $shippingAddress['country'] = $order->get_shipping_country();
-
-        $customer['billingAddress'] = $billingAddress;
+        $shippingAddress['state'] = $order->get_shipping_state();
         $customer['shippingAddress'] = $shippingAddress;
-        $customer['firstname'] = $order->get_billing_first_name();
-        $customer['lastname'] = $order->get_billing_last_name();
-        $customer['email'] = $order->get_billing_email();
-        $customer['phone'] = $order->get_billing_phone();
 
         $params['customer'] = $customer;
 
@@ -104,7 +109,7 @@ class PointCheckout_Rewards_Payment extends PointCheckout_Rewards_Parent
         }
         $paymentRequestParams = $this->getPaymentRequestParams();
         $response = $this->postCheckout($paymentRequestParams);
-        if (($response->success == 'true')) {
+        if ($response->success == 'true') {
             $actionUrl = $response->result->redirectUrl;
             WC()->session->set('checkoutId', $response->result->id);
         } else {
@@ -115,12 +120,12 @@ class PointCheckout_Rewards_Payment extends PointCheckout_Rewards_Parent
         $this->pcOrder->clearSessionCurrentOrder();
         $form = '<form style="display:none" name="frm_pointcheckout_payment" id="frm_pointcheckout_payment" method="GET" action="' . $actionUrl . '">';
         $form .= '<input type="submit">';
-        $formArray = array(
+
+        return array(
             'form' => $form,
             'response' => $response
 
         );
-        return $formArray;
     }
 
     public function postCheckout($paymentRequestParams)
@@ -144,7 +149,7 @@ class PointCheckout_Rewards_Payment extends PointCheckout_Rewards_Parent
         if (!empty($order)) {
 
 
-            if ($response->success != true) {
+            if (!$response->success) {
                 $order->update_status('canceled');
                 $errorMsg = isset($response->error) ? $response->error : 'connecting to pointcheckout failed';
                 $note = __("[ERROR] order canceled  :" . $errorMsg);
@@ -162,7 +167,7 @@ class PointCheckout_Rewards_Payment extends PointCheckout_Rewards_Parent
             $result = $response->result;
 
 
-            if ($response->success == true && $result->status != 'PAID') {
+            if ($response->success && $result->status != 'PAID') {
 
                 $order->update_status('canceled');
                 $note = __($this->getOrderHistoryMessage($result->id, 0, $result->status, $result->currency));

@@ -17,7 +17,7 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
 
         // Define user set variables
         $this->method_title = __('PointCheckout Card', 'woocommerce');
-        $this->title = 'Card';
+        $this->title = PointCheckout_Card_Config::getInstance()->getTitle() ;
         $this->description = PointCheckout_Card_Config::getInstance()->getDescription();
         $this->paymentService = PointCheckout_Card_Payment::getInstance();
         $this->config = PointCheckout_Card_Config::getInstance();
@@ -44,20 +44,23 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
 
     public function is_available()
     {
-        if (!$this->config->isEnabled())
+        if (!$this->config->isEnabled()) {
             return false;
+        }
+
         $valid = true;
         if ($this->config->isSpecificUserRoles()) {
             $valid = false;
             $user_id = WC()->customer->get_id();
             $user = new WP_User($user_id);
             if (!empty($user->roles) && is_array($user->roles)) {
-                foreach ($user->roles as $user_role)
+                foreach ($user->roles as $user_role) {
                     foreach ($this->config->getSpecificUserRoles() as $role) {
                         if ($role == $user_role) {
                             $valid = true;
                         }
                     }
+                }
             }
         }
 
@@ -159,6 +162,12 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
                     '0' => __('Disabled', 'pointcheckout_card'),
                 )
             ),
+            'title'         => array(
+                'title'       => __('Title', 'pointcheckout_card'),
+                'type'        => 'text',
+                'description' => __('This is the payment method title the user sees during checkout.', 'pointcheckout_card'),
+                'default'     => __('Card', 'pointcheckout_card')
+            ),
             'description'         => array(
                 'title'       => __('Description', 'pointcheckout_card'),
                 'type'        => 'text',
@@ -237,9 +246,7 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
     function getCountries()
     {
         $countries_obj   = new WC_Countries();
-        $countries   = $countries_obj->__get('countries');
-
-        return $countries;
+        return $countries_obj->__get('countries');
     }
 
     function getRoles()
