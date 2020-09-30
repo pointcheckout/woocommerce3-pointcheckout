@@ -1,6 +1,5 @@
 <?php
-
-
+define("PC_EXT_VERSION", "WooCommerce-Card-2.0.2");
 
 class PointCheckout_Card_Payment extends PointCheckout_Card_Parent
 {
@@ -36,6 +35,12 @@ class PointCheckout_Card_Payment extends PointCheckout_Card_Parent
         $params = array(
             'transactionId' => $orderId,
         );
+        $params["extVersion"] = PC_EXT_VERSION;
+        try{
+            $params["ecommerce"]= 'WordPress ' . $this->get_wp_version() . ', WooCommerce ' . $this->wpbo_get_woo_version_number();
+        } catch (\Throwable $e) {
+            // NOTHING TO DO 
+        }
 
         $cartItems = $order->get_items();
         $items = array();
@@ -213,5 +218,29 @@ class PointCheckout_Card_Payment extends PointCheckout_Card_Parent
             $message .= '<b style="color:red;">[NOTICE] </b><i>COD Amount: <b>' . $codAmount . ' ' . $this->session->data['currency'] . '</b></i>' . "\n";
         }
         return $message;
+    }
+
+    function wpbo_get_woo_version_number() {
+        // If get_plugins() isn't available, require it
+        if ( ! function_exists( 'get_plugins' ) ) {
+            require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+        }
+        
+        // Create the plugins folder and file variables
+        $plugin_folder = get_plugins( '/' . 'woocommerce' );
+        $plugin_file = 'woocommerce.php';
+        
+        // If the plugin version number is set, return it 
+        if ( isset( $plugin_folder[$plugin_file]['Version'] ) ) {
+            return $plugin_folder[$plugin_file]['Version'];
+
+        } else {
+        // Otherwise return null
+            return NULL;
+        }
+    }
+
+    function get_wp_version() {
+        return get_bloginfo('version');
     }
 }
