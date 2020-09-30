@@ -67,7 +67,9 @@ class PointCheckout_Card_Payment extends PointCheckout_Card_Parent
 
         // CUSTOMER
         $customer = array();
-        $customer['id'] = $order->get_customer_id();
+        if(!empty($order->get_customer_id()) && $order->get_customer_id() != 0) {
+            $customer['id'] = $order->get_customer_id();
+        }
         $customer['firstName'] = $order->get_billing_first_name();
         $customer['lastName'] = $order->get_billing_last_name();
         $customer['email'] = $order->get_billing_email();
