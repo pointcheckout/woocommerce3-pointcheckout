@@ -44,8 +44,8 @@ function initPointCheckoutCardPayment(form) {
         'type': 'POST',
         'dataType': 'json',
         'data': data,
-        'async': false
-    }).complete(function (response) {
+        'async': false,
+    }).then(function (response) {
         data = '';
         if(response.form) {
             data = response;

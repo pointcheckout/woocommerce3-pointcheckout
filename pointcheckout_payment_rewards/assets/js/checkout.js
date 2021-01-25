@@ -45,7 +45,7 @@ function initPointCheckoutPayment(form) {
         'dataType': 'json',
         'data': data,
         'async': false
-    }).complete(function (response) {
+    }).then(function (response) {
         data = '';
         if(response.form) {
             data = response;
