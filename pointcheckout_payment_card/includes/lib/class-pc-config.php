@@ -1,13 +1,11 @@
 <?php
 
-
-
 class PointCheckout_Card_Config extends PointCheckout_Card_Parent
 {
 
     private static $instance;
-    private $Api_Secret;
-    private $Api_Key;
+    private $api_Secret;
+    private $api_Key;
     private $Mode;
     private $orderPlacement;
     private $allowSpecific;
@@ -17,16 +15,16 @@ class PointCheckout_Card_Config extends PointCheckout_Card_Parent
     private $new_order_status;
     public $description;
     public $title;
-    
+
 
     public function __construct()
     {
         parent::__construct();
         $this->language                              = $this->_getShoppingCartConfig('language');
         $this->enabled                               = $this->_getShoppingCartConfig('enabled');
-        $this->Api_Key                               = $this->_getShoppingCartConfig('Api_Key');
+        $this->api_key                               = $this->_getShoppingCartConfig('api_key');
         $this->command                               = $this->_getShoppingCartConfig('command');
-        $this->Api_Secret                            = $this->_getShoppingCartConfig('Api_Secret');
+        $this->api_secret                            = $this->_getShoppingCartConfig('api_secret');
         $this->Mode                                  = $this->_getShoppingCartConfig('mode');
         $this->orderPlacement                        = $this->_getShoppingCartConfig('order_placement');
         $this->allowSpecific                         = $this->_getShoppingCartConfig('allow_specific');
@@ -59,8 +57,6 @@ class PointCheckout_Card_Config extends PointCheckout_Card_Parent
         return 'en';
     }
 
-
-
     public function getEnabled()
     {
         return $this->enabled;
@@ -71,16 +67,10 @@ class PointCheckout_Card_Config extends PointCheckout_Card_Parent
         return $this->Mode;
     }
 
-
-
-
-
     public function getSuccessOrderStatusId()
     {
         return $this->successOrderStatusId;
     }
-
-
 
     public function isActive()
     {
@@ -141,17 +131,17 @@ class PointCheckout_Card_Config extends PointCheckout_Card_Parent
 
     public function isEnabled()
     {
-        return $this->enabled == 1 ? true : false;
+        return $this->enabled === 'yes';
     }
 
     public function getApiKey()
     {
-        return $this->Api_Key;
+        return $this->api_key;
     }
 
     public function getApiSecret()
     {
-        return $this->Api_Secret;
+        return $this->api_secret;
     }
 
     public function isLiveMode()

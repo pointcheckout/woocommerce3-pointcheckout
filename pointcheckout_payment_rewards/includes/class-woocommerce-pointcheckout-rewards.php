@@ -261,8 +261,8 @@ class WC_Gateway_PointCheckout_Rewards extends PointCheckout_Rewards_Parent
     {
         $order   = new WC_Order($order_id);
         if (!isset($_GET['response_code'])) {
-            update_post_meta($order->id, '_payment_method_title', 'PointCheckout');
-            update_post_meta($order->id, '_payment_method', 'pointcheckout_rewards');
+            update_post_meta($order->get_id(), '_payment_method_title', 'PointCheckout');
+            update_post_meta($order->get_id(), '_payment_method', 'pointcheckout_rewards');
         }
         $form   = $this->paymentService->getPaymentRequestForm();
         $note = $this->paymentService->getOrderHistoryMessage($form['response']->result->id, 0, $form['response']->result->status, '');
@@ -282,7 +282,7 @@ class WC_Gateway_PointCheckout_Rewards extends PointCheckout_Rewards_Parent
     {
 
         global $woocommerce;
-        //send the secound call to pointcheckout to confirm payment 
+        //send the secound call to pointcheckout to confirm payment
         $success = $this->paymentService->checkPaymentStatus();
 
         $order = wc_get_order($_REQUEST['reference']);

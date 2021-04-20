@@ -26,12 +26,12 @@ class PointCheckout_Card_Order extends PointCheckout_Card_Parent
     {
         return WC()->session->get('order_awaiting_payment');
     }
-    
+
     public function clearSessionCurrentOrder()
     {
         return WC()->session->__unset('order_awaiting_payment');
     }
-    
+
 
     public function getOrderId()
     {
@@ -63,7 +63,7 @@ class PointCheckout_Card_Order extends PointCheckout_Card_Parent
 
     public function getCurrencyCode()
     {
-        return $this->order->get_order_currency();
+        return $this->order->get_currency();
     }
 
     public function getCurrencyValue()
@@ -79,15 +79,15 @@ class PointCheckout_Card_Order extends PointCheckout_Card_Parent
     public function getTaxAmount(){
         return $this->order->get_total_tax();
     }
-    
+
     public function getShippingAmount(){
         return $this->order->get_shipping_total();
     }
-    
+
     public function getSubtotal(){
         return $this->order->get_subtotal();
     }
-    
+
     public function getDiscountAmount(){
         return $this->order->get_discount_total();
     }
