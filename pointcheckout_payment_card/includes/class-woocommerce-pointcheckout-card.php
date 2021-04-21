@@ -13,14 +13,24 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
         if (is_admin()) {
             $this->has_fields = true;
             $this->init_form_fields();
+            $this->init_settings();
         }
 
         // Define user set variables
         $this->method_title = __('PointCheckout Card', 'woocommerce');
+        $this->method_description = __('Have your customers pay with credit or debit cards via PointCheckout', 'woocommerce');
         $this->title = PointCheckout_Card_Config::getInstance()->getTitle() ;
         $this->description = PointCheckout_Card_Config::getInstance()->getDescription();
         $this->paymentService = PointCheckout_Card_Payment::getInstance();
         $this->config = PointCheckout_Card_Config::getInstance();
+	      $this->icon = plugin_dir_url(__FILE__) . '../assets/images/mc-visa-network-logos.png';
+
+        if ( !$this->config->isLiveMode() ) {
+          $this->description .= ' ' . sprintf( __( 'TEST MODE ENABLED. You can use test cards only. ' .
+              'See the <a href="%s" target="_blank">PointCheckout WooCommerce Guide</a> for more details.', 'woocommerce' ),
+              'https://docs.pointcheckout.com/guides/woocommerce#testcards' );
+          $this->description  = trim( $this->description );
+        }
 
         // Actions
         add_action('woocommerce_receipt_' . $this->id, array($this, 'receipt_page'));
@@ -35,7 +45,7 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
     {
         $result = parent::process_admin_options();
         $settings = $this->settings;
-        $settings['enabled']  = isset($settings['enabled']) ? $settings['enabled'] : 0;
+        $settings['enabled']  = isset($settings['enabled']) ? $settings['enabled'] : 'no';
 
         update_option('woocommerce_pointcheckout_card_settings', apply_filters('woocommerce_settings_api_sanitized_fields_pointcheckout_card', $settings));
         return $result;
@@ -102,7 +112,7 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
     {
 ?>
         <h3><?php _e('PointCheckout Card Payment', 'pointcheckout_card'); ?></h3>
-        <p><?php _e('Please fill in the below section to start accepting payments on your site! You can find all the required information in your <a href="https://www.pointcheckout.com/" target="_blank">PointCheckout website</a>.', 'pointcheckout_card'); ?></p>
+        <p><?php _e('Please fill in the below section to start accepting payments on your site via PointCheckout! Learn more at <a href="https://docs.pointcheckout.com/" target="_blank">PointCheckout</a>.', 'pointcheckout_card'); ?></p>
 
 
         <table class="form-table">
@@ -113,23 +123,23 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
             <script>
                 jQuery(document).ready(function() {
                     jQuery('[name=save]').click(function() {
-                        if (!jQuery('#woocommerce_pointcheckout_card_Api_Key').val()) {
-                            alert('Please enter your Api Key!');
+                        if (!jQuery('#woocommerce_pointcheckout_card_api_key').val()) {
+                            alert('API key not configured');
                             return false;
                         }
-                        if (!jQuery('#woocommerce_pointcheckout_card_Api_Secret').val()) {
-                            alert('Please enter your Api Secret!');
+                        if (!jQuery('#woocommerce_pointcheckout_card_api_secret').val()) {
+                            alert('API secret not configured');
                             return false;
                         }
                         if (jQuery('#woocommerce_pointcheckout_card_allow_specific').val() == 1) {
                             if (!jQuery('#woocommerce_pointcheckout_card_specific_countries').val()) {
-                                alert('You select to specifiy for applicable countries but you did not select any!');
+                                alert('You enabled PointCheckout for specific countries but you did not select any');
                                 return false;
                             }
                         }
                         if (jQuery('#woocommerce_pointcheckout_card_allow_user_specific').val() == 1) {
                             if (!jQuery('#woocommerce_pointcheckout_card_specific_user_roles').val()) {
-                                alert('You select to specifiy for applicable user roles but you did not select any!');
+                                alert('You enabled PointCheckout for speficic user roles but you did not select any');
                                 return false;
                             }
                         }
@@ -152,38 +162,34 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
     {
         $staging_enabled = false;
         $this->form_fields = array(
-            'enabled'             => array(
+            'enabled'     => array(
                 'title'   => __('Enable/Disable', 'pointcheckout_card'),
-                'type'    => 'select',
-                'label'   => __('Enable the PointCheckout gateway', 'pointcheckout_card'),
-                'default' => '0',
-                'options' => array(
-                    '1' => __('Enabled', 'pointcheckout_card'),
-                    '0' => __('Disabled', 'pointcheckout_card'),
-                )
+                'type'    => 'checkbox',
+                'label'   => __('Enable card payments via PointCheckout', 'pointcheckout_card'),
+                'default' => 'no'
             ),
             'title'         => array(
                 'title'       => __('Title', 'pointcheckout_card'),
                 'type'        => 'text',
                 'description' => __('This is the payment method title the user sees during checkout.', 'pointcheckout_card'),
-                'default'     => __('Card', 'pointcheckout_card')
+                'default'     => __('Credit Card (via PointCheckout)', 'pointcheckout_card')
             ),
             'description'         => array(
                 'title'       => __('Description', 'pointcheckout_card'),
                 'type'        => 'text',
                 'description' => __('This is the description the user sees during checkout.', 'pointcheckout_card'),
-                'default'     => __('Pay using your card', 'pointcheckout_card')
+                'default'     => __('Comoplete your purchase using a credit or debit card.', 'pointcheckout_card')
             ),
             'mode'          => array(
                 'title'       => 'Mode',
                 'type'        => 'select',
                 'options'     => $staging_enabled ? array(
-                    '1' => __('live', 'pointcheckout_card'),
-                    '0' => __('testing', 'pointcheckout_card'),
+                    '1' => __('Live', 'pointcheckout_card'),
+                    '0' => __('Test', 'pointcheckout_card'),
                     '2' => __('Staging', 'pointcheckout_card'),
                 ) : array(
-                    '1' => 'live',
-                    '0' => 'testing',
+                    '1' => 'Live',
+                    '0' => 'Test',
                 ),
                 'default'     => '0',
                 'desc_tip'    => true,
@@ -191,16 +197,16 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
                 'placeholder' => '',
                 'class'       => 'wc-enhanced-select',
             ),
-            'Api_Key'         => array(
-                'title'       => __('Api Key', 'pointcheckout_card'),
+            'api_key'         => array(
+                'title'       => __('API Key', 'pointcheckout_card'),
                 'type'        => 'text',
                 'description' => __('Your Api Key, you can find in your PointCheckout account  settings.', 'pointcheckout_card'),
                 'default'     => '',
                 'desc_tip'    => true,
                 'placeholder' => ''
             ),
-            'Api_Secret'         => array(
-                'title'       => __('Api Secret', 'pointcheckout_card'),
+            'api_secret'         => array(
+                'title'       => __('API Secret', 'pointcheckout_card'),
                 'type'        => 'text',
                 'description' => __('Your Api Secret, you can find in your PointCheckout account  settings.', 'pointcheckout_card'),
                 'default'     => '',
@@ -266,8 +272,8 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
     {
         $order   = new WC_Order($order_id);
         if (!isset($_GET['response_code'])) {
-            update_post_meta($order->id, '_payment_method_title', 'Card');
-            update_post_meta($order->id, '_payment_method', 'pointcheckout_card');
+            update_post_meta($order->get_id(), '_payment_method_title', 'Card');
+            update_post_meta($order->get_id(), '_payment_method', 'pointcheckout_card');
         }
         $form   = $this->paymentService->getPaymentRequestForm();
         $note = $this->paymentService->getOrderHistoryMessage($form['response']->result->id, 0, $form['response']->result->status, '');
@@ -287,7 +293,7 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
     {
 
         global $woocommerce;
-        //send the secound call to pointcheckout to confirm payment 
+        //send the secound call to pointcheckout to confirm payment
         $success = $this->paymentService->checkPaymentStatus();
 
         $order = wc_get_order($_REQUEST['reference']);

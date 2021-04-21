@@ -1,10 +1,10 @@
 <?php
 
 /* Plugin Name: PointCheckout Card Payment
- * Description: PointCheckout card payment allows your customer to pay for there cart using cards
- * Version:     1.0.0
+ * Description: Have your customers pay with credit or debit cards via PointCheckout
+ * Version:     2.0.4
  * Author:      PointCheckout
- * Author URI:  https://www.pointcheckout.com/
+ * Author URI:  https://docs.pointcheckout.com/guides/woocommerce
  */
 $active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
 if (in_array('woocommerce/woocommerce.php', $active_plugins)) {
