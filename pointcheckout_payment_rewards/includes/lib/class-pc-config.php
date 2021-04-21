@@ -6,8 +6,8 @@ class PointCheckout_Rewards_Config extends PointCheckout_Rewards_Parent
 {
 
     private static $instance;
-    private $Api_Secret;
-    private $Api_Key;
+    private $api_secret;
+    private $api_key;
     private $Mode;
     private $orderPlacement;
     private $allowSpecific;
@@ -15,6 +15,7 @@ class PointCheckout_Rewards_Config extends PointCheckout_Rewards_Parent
     private $allowUserSpecific;
     private $specific_uesr_roles;
     private $new_order_status;
+    public $description;
 
 
     public function __construct()
@@ -22,9 +23,9 @@ class PointCheckout_Rewards_Config extends PointCheckout_Rewards_Parent
         parent::__construct();
         $this->language                              = $this->_getShoppingCartConfig('language');
         $this->enabled                               = $this->_getShoppingCartConfig('enabled');
-        $this->Api_Key                               = $this->_getShoppingCartConfig('Api_Key');
+        $this->api_key                               = $this->_getShoppingCartConfig('api_key');
         $this->command                               = $this->_getShoppingCartConfig('command');
-        $this->Api_Secret                            = $this->_getShoppingCartConfig('Api_Secret');
+        $this->api_secret                            = $this->_getShoppingCartConfig('api_secret');
         $this->Mode                                  = $this->_getShoppingCartConfig('mode');
         $this->orderPlacement                        = $this->_getShoppingCartConfig('order_placement');
         $this->allowSpecific                         = $this->_getShoppingCartConfig('allow_specific');
@@ -55,8 +56,6 @@ class PointCheckout_Rewards_Config extends PointCheckout_Rewards_Parent
         return 'en';
     }
 
-
-
     public function getEnabled()
     {
         return $this->enabled;
@@ -67,16 +66,10 @@ class PointCheckout_Rewards_Config extends PointCheckout_Rewards_Parent
         return $this->Mode;
     }
 
-
-
-
-
     public function getSuccessOrderStatusId()
     {
         return $this->successOrderStatusId;
     }
-
-
 
     public function isActive()
     {
@@ -137,17 +130,17 @@ class PointCheckout_Rewards_Config extends PointCheckout_Rewards_Parent
 
     public function isEnabled()
     {
-        return $this->enabled == 1 ? true : false;
+        return $this->enabled === 'yes';
     }
 
     public function getApiKey()
     {
-        return $this->Api_Key;
+        return $this->api_key;
     }
 
     public function getApiSecret()
     {
-        return $this->Api_Secret;
+        return $this->api_secret;
     }
 
     public function isLiveMode()
@@ -158,5 +151,10 @@ class PointCheckout_Rewards_Config extends PointCheckout_Rewards_Parent
     public function isStagingMode()
     {
         return $this->Mode == 2 ? true : false;
+    }
+
+    public function getDescription()
+    {
+        return $this->description;
     }
 }

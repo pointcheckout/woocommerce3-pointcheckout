@@ -4,7 +4,7 @@
  * Description: PointCheckout payment allows your customer to pay for there cart using reward programs
  * Version:     1.0.0
  * Author:      PointCheckout
- * Author URI:  https://www.pointcheckout.com/
+ * Author URI:  https://docs.pointcheckout.com/guides/woocommerce
  */
 $active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
 if (in_array('woocommerce/woocommerce.php', $active_plugins)) {

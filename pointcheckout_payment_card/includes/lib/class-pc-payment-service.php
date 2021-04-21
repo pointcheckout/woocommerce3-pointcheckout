@@ -1,5 +1,5 @@
 <?php
-define("PC_EXT_VERSION", "WooCommerce-Card-2.0.3");
+define("PC_EXT_VERSION", "WooCommerce-Card-2.0.4");
 
 class PointCheckout_Card_Payment extends PointCheckout_Card_Parent
 {
@@ -127,7 +127,7 @@ class PointCheckout_Card_Payment extends PointCheckout_Card_Parent
         $this->pcOrder->clearSessionCurrentOrder();
         $form = '<form style="display:none" name="frm_pointcheckout_card_payment" id="frm_pointcheckout_card_payment" method="GET" action="' . $actionUrl . '">';
         $form .= '<input type="submit">';
-        
+
         return array(
             'form' => $form,
             'response' => $response
@@ -137,7 +137,7 @@ class PointCheckout_Card_Payment extends PointCheckout_Card_Parent
 
     public function postCheckout($paymentRequestParams)
     {
-        return $this->pcUtils->apiCall("/", $paymentRequestParams);
+        return $this->pcUtils->apiCall("", $paymentRequestParams);
     }
 
 

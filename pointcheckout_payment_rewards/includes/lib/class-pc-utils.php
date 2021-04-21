@@ -3,7 +3,6 @@
 class PointCheckout_Rewards_Utils extends PointCheckout_Rewards_Parent
 {
 
-    private $logger;
     private $pcConfig;
 
     public function __construct()
@@ -11,16 +10,6 @@ class PointCheckout_Rewards_Utils extends PointCheckout_Rewards_Parent
         parent::__construct();
         $this->pcOrder = new PointCheckout_Rewards_Order();
         $this->pcConfig = PointCheckout_Rewards_Config::getInstance();
-    }
-
-    public function getLogger()
-    {
-        include_once('class-wc-logger.php');
-
-        if (self::$logger === null) {
-            self::$logger = new WC_Logger();
-        }
-        return self::$logger;
     }
 
     public function apiCall($url, $body)
@@ -54,7 +43,8 @@ class PointCheckout_Rewards_Utils extends PointCheckout_Rewards_Parent
 
     public function log($messages)
     {
-        $this->getLogger()->add('pointcheckout_rewards', $messages);
+        $logger = wc_get_logger();
+        $logger->error('pointcheckout_rewards', $messages);
     }
 
     public function getApiBaseUrl()

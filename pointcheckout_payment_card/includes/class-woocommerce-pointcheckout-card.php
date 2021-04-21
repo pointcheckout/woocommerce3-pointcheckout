@@ -23,7 +23,7 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
         $this->description = PointCheckout_Card_Config::getInstance()->getDescription();
         $this->paymentService = PointCheckout_Card_Payment::getInstance();
         $this->config = PointCheckout_Card_Config::getInstance();
-	      $this->icon = plugin_dir_url(__FILE__) . '../assets/images/mc-visa-network-logos.png';
+        $this->icon = plugin_dir_url(__FILE__) . '../assets/images/mc-visa-network-logos.png';
 
         if ( !$this->config->isLiveMode() ) {
           $this->description .= ' ' . sprintf( __( 'TEST MODE ENABLED. You can use test cards only. ' .
@@ -61,13 +61,15 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
         $valid = true;
         if ($this->config->isSpecificUserRoles()) {
             $valid = false;
-            $user_id = WC()->customer->get_id();
-            $user = new WP_User($user_id);
-            if (!empty($user->roles) && is_array($user->roles)) {
-                foreach ($user->roles as $user_role) {
-                    foreach ($this->config->getSpecificUserRoles() as $role) {
-                        if ($role == $user_role) {
-                            $valid = true;
+            if(WC()->customer != null) {
+                $user_id = WC()->customer->get_id();
+                $user = new WP_User($user_id);
+                if (!empty($user->roles) && is_array($user->roles)) {
+                    foreach ($user->roles as $user_role) {
+                        foreach ($this->config->getSpecificUserRoles() as $role) {
+                            if ($role == $user_role) {
+                                $valid = true;
+                            }
                         }
                     }
                 }
@@ -76,12 +78,14 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
 
         if ($valid && $this->config->isSpecificCountries()) {
             $valid = false;
-            $billingCountry = WC()->customer->get_billing_country();
+            if(WC()->customer != null) {
+                $billingCountry = WC()->customer->get_billing_country();
 
-            if (!$billingCountry == null) {
-                foreach ($this->config->getSpecificCountries() as $country) {
-                    if ($country == $billingCountry) {
-                        $valid = true;
+                if (!$billingCountry == null) {
+                    foreach ($this->config->getSpecificCountries() as $country) {
+                        if ($country == $billingCountry) {
+                            $valid = true;
+                        }
                     }
                 }
             }
@@ -185,11 +189,11 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
                 'type'        => 'select',
                 'options'     => $staging_enabled ? array(
                     '1' => __('Live', 'pointcheckout_card'),
-                    '0' => __('Test', 'pointcheckout_card'),
+                    '0' => __('Testing', 'pointcheckout_card'),
                     '2' => __('Staging', 'pointcheckout_card'),
                 ) : array(
-                    '1' => 'Live',
-                    '0' => 'Test',
+                    '1' => __('Live', 'pointcheckout_card'),
+                    '0' => __('Testing', 'pointcheckout_card'),
                 ),
                 'default'     => '0',
                 'desc_tip'    => true,

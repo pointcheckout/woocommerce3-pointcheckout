@@ -4,8 +4,8 @@ class PointCheckout_Card_Config extends PointCheckout_Card_Parent
 {
 
     private static $instance;
-    private $api_Secret;
-    private $api_Key;
+    private $api_secret;
+    private $api_key;
     private $Mode;
     private $orderPlacement;
     private $allowSpecific;

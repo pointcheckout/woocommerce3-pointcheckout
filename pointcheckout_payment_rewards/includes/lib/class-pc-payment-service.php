@@ -1,5 +1,5 @@
 <?php
-define("PC_EXT_VERSION", "WooCommerce-Card-2.0.3");
+define("PC_EXT_VERSION", "WooCommerce-Rewards-2.0.4");
 
 
 class PointCheckout_Rewards_Payment extends PointCheckout_Rewards_Parent
