@@ -1,5 +1,5 @@
 <?php
-define("PC_EXT_VERSION", "WooCommerce-Card-2.0.4");
+define("PC_EXT_VERSION", "WooCommerce-Card-2.0.5");
 
 class PointCheckout_Card_Payment extends PointCheckout_Card_Parent
 {

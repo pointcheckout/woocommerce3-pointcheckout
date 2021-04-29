@@ -2,7 +2,7 @@
 
 /* Plugin Name: PointCheckout Card Payment
  * Description: Have your customers pay with credit or debit cards via PointCheckout
- * Version:     2.0.4
+ * Version:     2.0.5
  * Author:      PointCheckout
  * Author URI:  https://docs.pointcheckout.com/guides/woocommerce
  */
