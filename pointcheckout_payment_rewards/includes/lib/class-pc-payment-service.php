@@ -107,33 +107,18 @@ class PointCheckout_Rewards_Payment extends PointCheckout_Rewards_Parent
     }
 
     /**
-     * build payment form 
+     * submit checkout details to pointcheckout
      */
-    public function getPaymentRequestForm()
+    public function postOrderToPoitCheckout()
     {
-
         if (!$this->pcConfig->isEnabled()) {
             return null;
         }
         $paymentRequestParams = $this->getPaymentRequestParams();
         $response = $this->postCheckout($paymentRequestParams);
-        if ($response->success == 'true') {
-            $actionUrl = $response->result->redirectUrl;
-            WC()->session->set('checkoutId', $response->result->id);
-        } else {
-            $this->pcUtils->log('Failed while sending first request to pointchckout resone: ' . $response->error);
-            wc_add_notice(sprintf(__('Failed to process payment please try again later', 'error')));
-            $actionUrl = get_site_url() . '/index.php/checkout';
-        }
+
         $this->pcOrder->clearSessionCurrentOrder();
-        $form = '<form style="display:none" name="frm_pointcheckout_payment" id="frm_pointcheckout_payment" method="GET" action="' . $actionUrl . '">';
-        $form .= '<input type="submit">';
-
-        return array(
-            'form' => $form,
-            'response' => $response
-
-        );
+        return $response;
     }
 
     public function postCheckout($paymentRequestParams)

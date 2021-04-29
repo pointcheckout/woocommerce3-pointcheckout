@@ -2,7 +2,7 @@
 
 /* Plugin Name: PointCheckout Rewards
  * Description: PointCheckout payment allows your customer to pay for there cart using reward programs
- * Version:     1.0.0
+ * Version:     2.0.4
  * Author:      PointCheckout
  * Author URI:  https://docs.pointcheckout.com/guides/woocommerce
  */

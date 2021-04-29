@@ -6,9 +6,11 @@ class WC_Gateway_PointCheckout_Rewards extends PointCheckout_Rewards_Parent
 {
     public $paymentService;
     public $config;
+    private $pcUtils;
 
     public function __construct()
     {
+        $this->pcUtils = new PointCheckout_Card_Utils();
         $this->has_fields = false;
         if (is_admin()) {
             $this->has_fields = true;
@@ -95,15 +97,6 @@ class WC_Gateway_PointCheckout_Rewards extends PointCheckout_Rewards_Parent
         } else {
             return false;
         }
-    }
-
-    function payment_scripts()
-    {
-        global $woocommerce;
-        if (!is_checkout()) {
-            return;
-        }
-        wp_enqueue_script('pointcheckoutrewardsjs-checkout', plugin_dir_url(__FILE__) . '../assets/js/checkout.js', array(), WC_VERSION, true);
     }
 
     /**
@@ -273,15 +266,24 @@ class WC_Gateway_PointCheckout_Rewards extends PointCheckout_Rewards_Parent
             update_post_meta($order->get_id(), '_payment_method_title', 'PointCheckout');
             update_post_meta($order->get_id(), '_payment_method', 'pointcheckout_rewards');
         }
-        $form   = $this->paymentService->getPaymentRequestForm();
+        $response   = $this->paymentService->postOrderToPoitCheckout();
+
+        if ($response->success == 'true') {
+            WC()->session->set('checkoutId', $response->result->id);
+        } else {
+            $this->pcUtils->log('Failed to initiate rewards payment using PointCheckout, error : ' . $response->error);
+        }
+
         $note = $this->paymentService->getOrderHistoryMessage($form['response']->result->id, 0, $form['response']->result->status, '');
         $order->add_order_note($note);
-        $result = array('result' => 'success', 'form' => $form['form']);
-        if (isset($_POST['woocommerce_pay']) && isset($_POST['_wpnonce']) && wp_verify_nonce($_POST['_wpnonce'], 'woocommerce-pay')) {
-            wp_send_json($result);
-            exit;
+
+        if ($response->success == 'true') {
+            return array(
+                'result' => 'success',
+                'redirect' => $response->result->redirectUrl
+            );
         } else {
-            return $result;
+            wc_add_notice(__('Failed to process payment please try again later'), 'error');
         }
     }
 
