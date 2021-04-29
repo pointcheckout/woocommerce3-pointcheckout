@@ -15,7 +15,6 @@ class PointCheckout_Rewards_Utils extends PointCheckout_Rewards_Parent
     public function apiCall($url, $body)
     {
         try {
-
             $headers = array(
                 'Content-Type: application/json',
                 'X-PointCheckout-Api-Key:' . $this->pcConfig->getApiKey(),
@@ -34,7 +33,7 @@ class PointCheckout_Rewards_Utils extends PointCheckout_Rewards_Parent
 
             $response = curl_exec($ch);
         } catch (Exception $e) {
-            $this->log('Failed to connect  to pointchckout resone: ' . $e->getMessage());
+            $this->log('Failed to connect call PointChckout API: ' . $e->getMessage());
             throw $e;
         }
 
@@ -44,7 +43,7 @@ class PointCheckout_Rewards_Utils extends PointCheckout_Rewards_Parent
     public function log($messages)
     {
         $logger = wc_get_logger();
-        $logger->error('pointcheckout_rewards', $messages);
+        $logger->error($messages, 'pointcheckout_rewards');
     }
 
     public function getApiBaseUrl()

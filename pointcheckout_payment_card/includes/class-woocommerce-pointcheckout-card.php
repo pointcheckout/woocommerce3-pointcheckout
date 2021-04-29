@@ -277,7 +277,7 @@ class WC_Gateway_PointCheckout_Card extends PointCheckout_Card_Parent
         if ($response->success == 'true') {
             WC()->session->set('checkoutId', $response->result->id);
         } else {
-            $this->pcUtils->log('Failed to initiate card payment using PointCheckout, error : ' . $response->error);
+            $this->pcUtils->log('Failed to initiate card payment using PointCheckout, message : ' . $response->error);
         }
 
         $note = $this->paymentService->getOrderHistoryMessage($form['response']->result->id, 0, $form['response']->result->status, '');
