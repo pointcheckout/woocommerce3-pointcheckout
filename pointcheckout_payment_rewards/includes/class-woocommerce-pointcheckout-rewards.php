@@ -109,7 +109,7 @@ class WC_Gateway_PointCheckout_Rewards extends PointCheckout_Rewards_Parent
     {
 ?>
         <h3><?php _e('PointCheckout Rewards Payment', 'pointcheckout_rewards'); ?></h3>
-        <p><?php _e('Please fill in the below section to start accepting payments on your site via PointCheckout! Learn more at <a href="https://docs.pointcheckout.com/" target="_blank">PointCheckout</a>." target="_blank">PointCheckout website</a>.', 'pointcheckout_rewards'); ?></p>
+        <p><?php _e('Please fill in the below section to start accepting payments on your site via PointCheckout! Learn more at <a href="https://docs.pointcheckout.com/" target="_blank">PointCheckout</a>.', 'pointcheckout_rewards'); ?></p>
 
 
         <table class="form-table">
